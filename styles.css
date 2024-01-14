@@ -1,0 +1,38 @@
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+header {
+    background: #f4f4f4;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    margin: 0;
+}
+
+section {
+    padding: 20px;
+    margin: 20px 0;
+}
+
+section#about {
+    background: #e2e2e2;
+}
+
+section#projects, section#experience {
+    background: #f9f9f9;
+}
+
+section#contact {
+    background: #dcdcdc;
+}
+
+h2 {
+    color: #333;
+}
