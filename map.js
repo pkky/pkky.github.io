@@ -66,6 +66,8 @@ document.getElementById('darkModeToggle').addEventListener('click', function() {
     this.textContent = isDarkMode ? '🌞' : '🌜';
 });
 
+document.getElementById('shopSelector').addEventListener('change', updateShopsDisplay);
+
 function loadGeoJson(city) {
     var geoJsonPath = city + '.geojson';
 
@@ -77,14 +79,27 @@ function loadGeoJson(city) {
         .then(response => response.json())
         .then(data => {
             geojsonLayer = L.geoJSON(data, {
+                pointToLayer: function(feature, latlng) {
+                    // Return an empty layer to avoid creating default markers
+                    return L.layerGroup();
+                },
                 onEachFeature: function (feature, layer) {
-                    if (feature.geometry.type === 'MultiPoint') {
+                    if (feature.geometry.type === 'MultiPoint' && feature.properties.tag) {
                         var latlngs = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
                         var polygon = L.polygon(latlngs, {
                             color: 'black',
                             fillColor: 'black',
                             fillOpacity: 0.5
-                        }).addTo(map);
+                        })
+
+                        var centroid = polygon.getBounds().getCenter();
+                        var customIcon = L.icon({
+                            iconUrl: feature.properties.image, // Path to the shop image
+                            iconSize: [30, 30], // Adjust icon size as needed
+                            iconAnchor: [15, 15] // Adjust anchor to center the icon
+                        });
+
+                        var marker = L.marker(centroid, {icon: customIcon});
 
                         polygon.bindPopup('<b>' + feature.properties.shopName + '</b><br>' +
                         feature.properties.streetName + ' ' + feature.properties.streetNumber);
@@ -95,9 +110,34 @@ function loadGeoJson(city) {
                         polygon.on('mouseout', function () {
                             this.closePopup();
                         });
+
+                        var shopTag = feature.properties.tag;
+                        if (!shopLayers[shopTag]) {
+                            shopLayers[shopTag] = L.layerGroup();
+                        }
+                        shopLayers[shopTag].addLayer(polygon).addLayer(marker);
                     }
                 }
-            }).addTo(map);
+            })
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
+}
+
+var shopLayers = {}; // Object to hold layers for each type of shop
+
+function updateShopsDisplay() {
+    var checkboxes = document.querySelectorAll('#shopSelector input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            // Show the layer if it exists
+            if (shopLayers[checkbox.value]) {
+                shopLayers[checkbox.value].addTo(map);
+            }
+        } else {
+            // Remove the layer from the map
+            if (shopLayers[checkbox.value]) {
+                map.removeLayer(shopLayers[checkbox.value]);
+            }
+        }
+    });
 }
