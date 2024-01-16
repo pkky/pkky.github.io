@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pkky.github.io</title>
     <link rel="stylesheet" href="map.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
     <header>
@@ -21,13 +22,15 @@
 
     <select id="citySelector" onchange="showCity()">
         <option value="">Select a City</option>
-        <option value="lodz">Łódź</option>
-        <option value="warsaw">Warszawa</option>
-        <option value="krakow">Kraków</option>
+        <option value="51.759445,19.457216">Łódź</option>
+        <option value="52.229676,21.012229">Warszawa</option>
+        <option value="50.064651,19.944981">Kraków</option>
+        <!-- Add more cities as needed -->
     </select>
 
     <div id="mapContainer"></div>
 
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="map.js"></script>
 </body>
 </html>
