@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pkky.github.io</title>
+    <link rel="stylesheet" href="map.css">
+</head>
+<body>
+    <header>
+        <h1>Paweł Kurantowicz</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <select id="citySelector" onchange="showCity()">
+        <option value="">Select a City</option>
+        <option value="lodz">Łódź</option>
+        <option value="warsaw">Warszawa</option>
+        <option value="krakow">Kraków</option>
+    </select>
+
+    <div id="mapContainer"></div>
+
+    <script src="map.js"></script>
+</body>
+</html>

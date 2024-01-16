@@ -1,0 +1,18 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+#citySelector {
+    margin: 20px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#mapContainer {
+    width: 80%;
+    height: 500px;
+    margin: auto;
+    border: 1px solid #000;
+    background-color: #f3f3f3;
+    position: relative;
+}
