@@ -64,13 +64,16 @@ function loadGeoJson(city) {
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
 
+var markers = []; // Global array to keep track of markers
+
 function updateMapWithFilteredData() {
     if (!map || !globalGeojsonData) return;
 
-    if (geojsonLayer) {
-        geojsonLayer.remove();
-    }
+    // Clear existing markers
+    markers.forEach(marker => marker.remove());
+    markers = []; // Reset the markers array
 
+    // Add new geojsonLayer with filtered data
     geojsonLayer = L.geoJSON(globalGeojsonData, {
         filter: function(feature, layer) {
             return shouldDisplayShop(feature.properties.tag);
@@ -80,17 +83,20 @@ function updateMapWithFilteredData() {
 }
 
 
+
 // Function to determine if a shop should be displayed
 function shouldDisplayShop(shopTag) {
     var checkboxes = document.querySelectorAll('#shopSelector input[type="checkbox"]');
+    var displayShop = false;
     for (var i = 0; i < checkboxes.length; i++) {
-        console.log("Checking:", checkboxes[i].value, shopTag, checkboxes[i].checked);
         if (checkboxes[i].value === shopTag && checkboxes[i].checked) {
-            return true;
+            displayShop = true;
+            break;
         }
     }
-    return false;
+    return displayShop;
 }
+
 
 // Function to define behavior for each feature in the GeoJSON file
 function onEachFeature(feature, layer) {
@@ -98,21 +104,23 @@ function onEachFeature(feature, layer) {
         feature.geometry.coordinates.forEach((coord) => {
             if (shouldDisplayShop(feature.properties.tag)) {
                 var customIcon = L.icon({
-                    iconUrl: feature.properties.image, // URL to the image
-                    iconSize: [20, 20], // Size of the icon
-                    iconAnchor: [10, 20], // Point of the icon which will correspond to marker's location
-                    popupAnchor: [0, -20] // Point from which the popup should open relative to the iconAnchor
+                    iconUrl: feature.properties.image,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 20],
+                    popupAnchor: [0, -20]
                 });
 
                 var point = L.marker([coord[0], coord[1]], {icon: customIcon});
                 point.bindPopup(getPopupContent(feature));
                 point.addTo(map);
+                markers.push(point); // Add marker to the global markers array
             }
         });
     } else if (feature.properties && feature.properties.shopName) {
         layer.bindPopup(getPopupContent(feature));
     }
 }
+
 
 // Function to get popup content
 function getPopupContent(feature) {
@@ -122,3 +130,4 @@ function getPopupContent(feature) {
 document.getElementById('shopSelector').addEventListener('change', function() {
     updateMapWithFilteredData();
 });
+
