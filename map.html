@@ -14,8 +14,9 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     </head>
 <body>
-    <header>
-        <h1>Paweł Kurantowicz</h1>
+    <div class="box">
+        <header class="header">
+            <h1>Paweł Kurantowicz</h1>
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
@@ -24,30 +25,29 @@
                 <li><a href="contact.html">Contact</a></li>
             </ul>
         </nav>
-    </header>
-
-    <select id="citySelector" onchange="showCity()">
-        <option value="">Select a City</option>
-        <option value="Warsaw">Warszawa</option>
-        <option value="Lodz">Łódź</option>
-        <option value="Krakow">Kraków</option>
-        <!-- Add more cities as needed -->
-    </select>
-
-    <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Select Shops
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <form id="shopSelector">
-                <label class="dropdown-item"><input type="checkbox" value="biedronka" checked> Biedronka</label>
-                <label class="dropdown-item"><input type="checkbox" value="lidl" checked> Lidl</label>
-                <!-- Add more checkboxes for other shops -->
-            </form>
+        </header>
+        <div class="functions">
+            <select id="citySelector" onchange="showCity()">
+                <option value="" selected>Wybierz miasto</option>
+                <option value="Warsaw">Warszawa</option>
+                <option value="Lodz">Łódź</option>
+                <option value="Krakow">Kraków</option>
+            </select>
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Wybierz sklepy
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <form id="shopSelector">
+                        <label class="dropdown-item"><input type="checkbox" value="biedronka" checked> Biedronka</label>
+                        <label class="dropdown-item"><input type="checkbox" value="lidl" checked> Lidl</label>
+                    </form>
+                </div>
+            </div>  
+            <span id="darkModeToggle">🌜</span>
         </div>
-    </div>  
-
-    <div id="mapContainer"></div>
+        <div class="map" id="mapContainer"></div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="map.js"></script>
