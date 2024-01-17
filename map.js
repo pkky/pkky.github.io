@@ -3,7 +3,10 @@ var geojsonLayer;
 var city = null;
 var shopLayers = {}; // Object to hold layers for each type of shop
 var currentGreenSquareMarker = null;
-
+var polandBounds = [
+    [49.0, 14.1], // Southwest coordinates
+    [55.0, 24.1]  // Northeast coordinates
+];
 
 // Mapping of city names to their coordinates
 const cityCoordinates = {
@@ -35,25 +38,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeMap() {
     // Set the initial view of the map
-    const initialCoordinates = [52.0693, 19.4803]; // Coordinates for Poland
+    const initialCoordinates = [52.0693, 19.4803]; // Coordinates for the center of Poland
     const initialZoomLevel = 6;
-    map = L.map('mapContainer').setView(initialCoordinates, initialZoomLevel);
+    
+    map = L.map('mapContainer', {
+        maxBounds: polandBounds,
+        maxBoundsViscosity: 1.0,
+        minZoom: 6 // Set minimum zoom level
+    }).setView(initialCoordinates, initialZoomLevel);
 
     // Add the tile layer to the map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Load Poland borders by default
-    loadPolandBorders();
+    EU(); // Load EU data
+    loadPolandBorders(); // Load Poland borders
 }
+
 
 function attachEventListeners() {
     document.getElementById('citySelector').addEventListener('change', showCity);
     document.getElementById('shopSelector').addEventListener('change', updateShopsDisplay);
     document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-    
+    document.getElementById('addressInput').addEventListener('change', function(e) {
+        var address = e.target.value;
+        var city = document.getElementById('citySelector').value;
+        geocodeAddress(address, city);
+    });
 }
 
 function showCity() {
@@ -188,12 +200,6 @@ function addGreenSquareMarker(lat, lng) {
     currentGreenSquareMarker = L.marker([lat, lng], { icon: greenIcon }).addTo(map);
 }
 
-document.getElementById('addressInput').addEventListener('change', function(e) {
-    var address = e.target.value;
-    var city = document.getElementById('citySelector').value;
-    geocodeAddress(address, city);
-});
-
 function updateShopsDisplay() {
     var checkboxes = document.querySelectorAll('#shopSelector input[type="checkbox"]');
     checkboxes.forEach(checkbox => {
@@ -225,16 +231,14 @@ function toggleDarkMode() {
 // Define light and dark tile layers for dark mode toggle
 var lightTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '© OpenStreetMap contributors'
 });
 
 var darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '© OpenStreetMap contributors'
 });
 
 function loadPolandBorders() {
-    fetch('map.geojson')  // Make sure this is the correct path to your GeoJSON file
+    fetch('map.geojson') // Adjust the path to your GeoJSON file
         .then(response => response.json())
         .then(data => {
             if (geojsonLayer) {
@@ -242,9 +246,42 @@ function loadPolandBorders() {
             }
             geojsonLayer = L.geoJSON(data, {
                 style: function (feature) {
-                    return {color: "#ff7800", weight: 2};  // Style for the border, adjust as needed
+                    return {
+                        color: "#ff7800", // border color
+                        weight: 5,
+                        fillColor: "rgba(255, 255, 255, 0.3)", // light color for Poland
+                        fillOpacity: 5
+                    };
                 }
             }).addTo(map);
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
+}
+
+function EU() {
+    fetch('EU.json') // Adjust the path to your GeoJSON file for EU
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: function (feature) {
+                    // Check if the country is Poland, then style differently
+                    if (feature.properties.name === "Poland") {
+                        return {
+                            fillColor: "#ffffff", // White color for Poland
+                            fillOpacity: 1, // Slightly transparent
+                            color: "#000000", // Black border color
+                            weight: 1
+                        };
+                    } else {
+                        return {
+                            fillColor: "#000000", // Black color for other countries
+                            fillOpacity: 0.9, // Slightly transparent
+                            color: "#000000", // Black border color
+                            weight: 1
+                        };
+                    }
+                }
+            }).addTo(map);
+        })
+        .catch(error => console.error('Error loading the EU GeoJSON file:', error));
 }
