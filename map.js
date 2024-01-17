@@ -9,8 +9,24 @@ var currentGreenSquareMarker = null;
 const cityCoordinates = {
     "Warsaw": [52.229676, 21.012229],
     "Lodz": [51.759445, 19.457216],
-    "Krakow": [50.064651, 19.944981]
+    "Krakow": [50.064651, 19.944981],
+    "Wroclaw": [51.107883, 17.038538],
+    "Bydgoszcz": [53.123482, 18.008438],
+    "Torun": [53.013790, 18.598444],
+    "Lublin": [51.246454, 22.568446],
+    "Gorzow_Wielkopolski": [52.73679, 15.22878],
+    "Zielona_Gora": [51.935621, 15.506186],
+    "Opole": [50.675107, 17.921298],
+    "Rzeszow": [50.041187, 21.999121],
+    "Bialystok": [53.132489, 23.168840],
+    "Gdansk": [54.352025, 18.646638],
+    "Katowice": [50.270908, 19.039993],
+    "Kielce": [50.866077, 20.628569],
+    "Olsztyn": [53.770226, 20.490189],
+    "Poznan": [52.406374, 16.925168],
+    "Szczecin": [53.428543, 14.552812]
 };
+
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
@@ -59,6 +75,12 @@ function showCity() {
 
     // Clear the shopLayers object
     shopLayers = {};
+    
+    // Remove the previous green square marker if it exists
+    if (currentGreenSquareMarker) {
+        map.removeLayer(currentGreenSquareMarker);
+        currentGreenSquareMarker = null;
+    }
     
     // Set view and load data based on selected city
     if (city) {
