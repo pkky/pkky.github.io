@@ -31,9 +31,21 @@ body {
 
 /* Functions row styling */
 .functions {
+    width: 100%; /* Ensures full width */
     display: flex;
-    justify-content: space-between;
-    padding: 0 15px;
+    flex-wrap: wrap; /* Allows items to wrap in smaller screens */
+    gap: 15px; /* Provides spacing between elements */
+    margin-bottom: 20px;
+}
+
+/* Full width for form-control elements */
+.functions .form-control {
+    flex-grow: 1; /* Allows the element to grow and fill the space */
+}
+
+/* Style for dropdown and buttons to ensure equal width and alignment */
+.dropdown, .functions button {
+    flex-grow: 1; /* Flex grow for equal width */
 }
 
 /* Equal width for dropdown and selector, and alignment */
