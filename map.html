@@ -4,14 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pkky.github.io</title>
+
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="map.css">
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <!-- Bootstrap JS and its dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Leaflet Geocoder CSS & JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <link rel="stylesheet" href="map.css">
 </head>
 <body>
     <div class="container">
@@ -47,9 +53,11 @@
                             <form id="shopSelector">
                                 <label class="dropdown-item"><input type="checkbox" value="biedronka" checked> Biedronka</label>
                                 <label class="dropdown-item"><input type="checkbox" value="lidl" checked> Lidl</label>
+                                <label class="dropdown-item"><input type="checkbox" value="carrefour" checked> Carrefour</label>
                             </form>
                         </div>
                     </div>
+                    <input type="text" id="addressInput" placeholder="Enter an address" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
                     <span id="darkModeToggle">🌜</span>
                 </div>
             </div>
@@ -62,7 +70,6 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="map.js"></script>
 </body>
 </html>

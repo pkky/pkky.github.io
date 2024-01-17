@@ -102,3 +102,9 @@ body.dark-mode .navbar-light .navbar-nav .nav-link {
 .navbar-expand-lg {
     width: 100%;
 }
+
+.green-square-marker {
+    width: 20px;
+    height: 20px;
+    background-color: green;
+}
