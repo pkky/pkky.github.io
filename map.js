@@ -1,5 +1,6 @@
 var map;
 var geojsonLayer;
+var city = null;
 
 // Mapping of city names to their coordinates
 const cityCoordinates = {
@@ -27,36 +28,40 @@ function loadPolandBorders() {
 }
 
 function showCity() {
-    var city = document.getElementById("citySelector").value;
+    city = document.getElementById("citySelector").value;
     const polandCoordinates = [52.0693, 19.4803];
     const polandZoomLevel = 6;
 
+    if (map) {
+        map.remove();
+    }
+
+    map = L.map('mapContainer');
+
+    // Check if dark mode is active
+    var isDarkMode = document.body.classList.contains('dark-mode');
+    var tileUrl = isDarkMode 
+                  ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png' // URL for dark mode tiles
+                  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'; // URL for light mode tiles
+
+    L.tileLayer(tileUrl, {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
     if (city) {
-        var coordinates = cityCoordinates[city];
+        map.setView(cityCoordinates[city], 13);
         loadGeoJson(city);
-
-        if (map) {
-            map.remove();
-        }
-
-        map = L.map('mapContainer').setView([coordinates[0], coordinates[1]], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
     } else {
-        if (map) {
-            map.remove();
-        }
-        map = L.map('mapContainer').setView(polandCoordinates, polandZoomLevel);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
+        map.setView(polandCoordinates, polandZoomLevel);
         loadPolandBorders();
     }
+
+    map.on('dblclick', function() {
+        if (map.getZoom() == 19) {
+            map.setZoom(13); // Zoom out to level 19 when the map is double-clicked
+        }
+    });
 }
 
 showCity();
@@ -64,6 +69,14 @@ showCity();
 document.getElementById('darkModeToggle').addEventListener('click', function() {
     var isDarkMode = document.body.classList.toggle('dark-mode');
     this.textContent = isDarkMode ? '🌞' : '🌜';
+
+    if (isDarkMode) {
+        map.removeLayer(lightTileLayer);
+        darkTileLayer.addTo(map);
+    } else {
+        map.removeLayer(darkTileLayer);
+        lightTileLayer.addTo(map);
+    }
 });
 
 document.getElementById('shopSelector').addEventListener('change', updateShopsDisplay);
@@ -80,48 +93,49 @@ function loadGeoJson(city) {
         .then(data => {
             geojsonLayer = L.geoJSON(data, {
                 pointToLayer: function(feature, latlng) {
-                    // Return an empty layer to avoid creating default markers
-                    return L.layerGroup();
+                    return L.layerGroup(); // Avoid creating default markers
                 },
                 onEachFeature: function (feature, layer) {
                     if (feature.geometry.type === 'MultiPoint' && feature.properties.tag) {
+                        var fillColor = getFillColorByTag(feature.properties.tag);
                         var latlngs = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
                         var polygon = L.polygon(latlngs, {
                             color: 'black',
-                            fillColor: 'black',
+                            fillColor: fillColor,
                             fillOpacity: 0.5
-                        })
+                        });
 
                         var centroid = polygon.getBounds().getCenter();
                         var customIcon = L.icon({
-                            iconUrl: feature.properties.image, // Path to the shop image
-                            iconSize: [30, 30], // Adjust icon size as needed
-                            iconAnchor: [15, 15] // Adjust anchor to center the icon
+                            iconUrl: feature.properties.image, 
+                            iconSize: [20, 20], 
+                            iconAnchor: [10, 10]
                         });
 
                         var marker = L.marker(centroid, {icon: customIcon});
+                        marker.bindPopup('<b>' + feature.properties.shopName + '</b><br>' +
+                                        feature.properties.streetName + ' ' + feature.properties.streetNumber);
 
-                        polygon.bindPopup('<b>' + feature.properties.shopName + '</b><br>' +
-                        feature.properties.streetName + ' ' + feature.properties.streetNumber);
-
-                        polygon.on('mouseover', function () {
+                        marker.on('mouseover', function () {
                             this.openPopup();
-                        });
-                        polygon.on('mouseout', function () {
+                        }).on('mouseout', function () {
                             this.closePopup();
+                        }).on('dblclick', function() {
+                            map.setView(marker.getLatLng(), 19);
                         });
 
                         var shopTag = feature.properties.tag;
                         if (!shopLayers[shopTag]) {
                             shopLayers[shopTag] = L.layerGroup();
                         }
-                        shopLayers[shopTag].addLayer(polygon).addLayer(marker);
+                        shopLayers[shopTag].addLayer(polygon).addLayer(marker).addTo(map);
                     }
                 }
-            })
+            }).addTo(map);
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
+
 
 var shopLayers = {}; // Object to hold layers for each type of shop
 
@@ -129,15 +143,34 @@ function updateShopsDisplay() {
     var checkboxes = document.querySelectorAll('#shopSelector input[type="checkbox"]');
     checkboxes.forEach(checkbox => {
         if (checkbox.checked) {
-            // Show the layer if it exists
             if (shopLayers[checkbox.value]) {
                 shopLayers[checkbox.value].addTo(map);
             }
         } else {
-            // Remove the layer from the map
             if (shopLayers[checkbox.value]) {
                 map.removeLayer(shopLayers[checkbox.value]);
             }
         }
     });
 }
+
+function getFillColorByTag(tag) {
+    // Define colors for different tags
+    var colors = {
+        "biedronka": "yellow",
+        "lidl": "blue",
+        // Add more tags and colors as needed
+    };
+
+    return colors[tag] || "black"; // Default color if tag not found
+}
+
+var lightTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+});
+
+var darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+});
