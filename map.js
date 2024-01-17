@@ -51,25 +51,29 @@ function initializeMap() {
     // Load Poland borders by default
     loadPolandBorders();
     
-    // Add zoom end event listener
-    map.on('zoomend', function() {
-        if (map.getZoom() === 6) {
-            resetMapView();
-        }
+    // Initialize shop layers without adding them to the map
+    var shopTypes = ["biedronka", "Lidl", "Carrefour", "Auchan"]; // Add other shop types if necessary
+    shopTypes.forEach(shopType => {
+        shopLayers[shopType] = L.layerGroup();
     });
 
     // Add the tile layer to the map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
-
-    EU(); // Load EU data
     
+    map.on('zoomend', function() {
+        if (map.getZoom() === 6) {
+            resetMapView();
+        }
+    });
+    
+    EU();
 }
 
 function resetMapView() {
     // Reset city selection
-    document.getElementById('citySelector').value = '';
+    document.getElementById('citySelector').value = 'Wybierz miasto';
 
     // Clear previous city data
     clearCityData();
@@ -142,7 +146,7 @@ function showCity() {
     }
     
     // Set view and load data based on selected city
-    if (city) {
+    if (city && city !== 'Wybierz miasto') {
         map.setView(cityCoordinates[city], 13);
         loadGeoJson(city);
     } else {
@@ -181,26 +185,14 @@ function onEachFeature(feature, layer) {
                 iconAnchor: [10, 10]
             });
 
-            var marker = L.marker([coord[0], coord[1]], {icon: customIcon});
+            var marker = L.marker([coord[0], coord[1]], {icon: customIcon}); // Leaflet expects [lat, lng]
             marker.bindPopup('<b>' + feature.properties.shopName + '</b>');
-            
-            marker.on('mouseover', function () {
-                this.openPopup();
-            }).on('mouseout', function () {
-                this.closePopup();
-            }).on('dblclick', function () {
-                if (map.getZoom() === 19) {
-                    map.setView(cityCoordinates[city], 13); // Zoom out to level 13 for the selected city
-                } else {
-                    map.setView(marker.getLatLng(), 19); // Zoom in to level 19 on the marker
-                }
-            });
 
             var shopTag = feature.properties.tag;
             if (!shopLayers[shopTag]) {
-                shopLayers[shopTag] = L.layerGroup();
+                shopLayers[shopTag] = L.layerGroup().addTo(map); // Initialize and add to map
             }
-            shopLayers[shopTag].addLayer(marker).addTo(map);
+            shopLayers[shopTag].addLayer(marker); // Add marker to the corresponding layer group
         });
     }
 }
@@ -338,7 +330,9 @@ function EU() {
 }
 
 function showShopsInRadius(centerCoords, radius) {
-    // Clear previous shop layers
+    console.log(`Checking shops within radius: ${radius} meters of ${centerCoords}`);
+
+    // Clear previous shop layers from the map
     Object.keys(shopLayers).forEach(key => {
         if (shopLayers[key]) {
             shopLayers[key].clearLayers(); // Clear layers but keep the layerGroup for future use
@@ -349,9 +343,15 @@ function showShopsInRadius(centerCoords, radius) {
     Object.keys(shopLayers).forEach(shopTag => {
         if (shopLayers[shopTag]) {
             shopLayers[shopTag].eachLayer(function(layer) {
-                var distance = map.distance(centerCoords, layer.getLatLng());
+                var shopCoords = layer.getLatLng();
+                console.log(`Shop coordinates: ${shopCoords}`);
+                var distance = map.distance(centerCoords, shopCoords);
+                console.log(`Distance from center to ${shopTag} shop at ${shopCoords}: ${distance} meters`);
+                
                 if (distance <= radius) {
-                    layer.addTo(map);
+                    layer.addTo(map); // Add only if within the radius
+                    shopLayers[shopTag].addLayer(layer);
+                    console.log(`${shopTag} shop within radius: ${shopCoords}`);
                 }
             });
         }
