@@ -7,6 +7,7 @@ var polandBounds = [
     [49.0, 14.1], // Southwest coordinates
     [55.0, 24.1]  // Northeast coordinates
 ];
+const searchRadius = 2000; // 2 km
 
 // Mapping of city names to their coordinates
 const cityCoordinates = {
@@ -47,15 +48,61 @@ function initializeMap() {
         minZoom: 6 // Set minimum zoom level
     }).setView(initialCoordinates, initialZoomLevel);
 
+    // Load Poland borders by default
+    loadPolandBorders();
+    
+    // Add zoom end event listener
+    map.on('zoomend', function() {
+        if (map.getZoom() === 6) {
+            resetMapView();
+        }
+    });
+
     // Add the tile layer to the map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
 
     EU(); // Load EU data
-    loadPolandBorders(); // Load Poland borders
+    
 }
 
+function resetMapView() {
+    // Reset city selection
+    document.getElementById('citySelector').value = '';
+
+    // Clear previous city data
+    clearCityData();
+
+    // Remove the previous green square marker if it exists
+    if (currentGreenSquareMarker) {
+        map.removeLayer(currentGreenSquareMarker);
+        currentGreenSquareMarker = null;
+    }
+
+    // Set view for Poland and load borders
+    map.setView([52.0693, 19.4803], 6);
+    loadPolandBorders();
+}
+
+function clearCityData() {
+    // Clear previous city data
+    if (geojsonLayer) {
+        geojsonLayer.remove();
+        geojsonLayer = null;
+    }
+    
+    // Remove previous shop layers
+    Object.keys(shopLayers).forEach(key => {
+        if (shopLayers[key]) {
+            shopLayers[key].remove();
+            shopLayers[key] = null;
+        }
+    });
+
+    // Clear the shopLayers object
+    shopLayers = {};
+}
 
 function attachEventListeners() {
     document.getElementById('citySelector').addEventListener('change', showCity);
@@ -178,6 +225,9 @@ function geocodeAddress(address, city) {
                 
                 // Optionally, center the map on the new marker
                 map.setView(coordinates, 15);
+                
+                // Show shops within the radius
+                showShopsInRadius(coordinates, searchRadius);
             } else {
                 console.error('No results found for this address.');
             }
@@ -249,11 +299,12 @@ function loadPolandBorders() {
                     return {
                         color: "#ff7800", // border color
                         weight: 5,
-                        fillColor: "rgba(255, 255, 255, 0.3)", // light color for Poland
-                        fillOpacity: 5
+                        fillColor: "#ff7800", // light color for Poland
+                        fillOpacity: 0.2
                     };
                 }
             }).addTo(map);
+            geojsonLayer.bringToFront(); // Make sure the border is always on top
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
@@ -269,12 +320,12 @@ function EU() {
                         return {
                             fillColor: "#ffffff", // White color for Poland
                             fillOpacity: 1, // Slightly transparent
-                            color: "#000000", // Black border color
+                            color: "#ffffff", // Black border color
                             weight: 1
                         };
                     } else {
                         return {
-                            fillColor: "#000000", // Black color for other countries
+                            fillColor: "#444444", // Black color for other countries
                             fillOpacity: 0.9, // Slightly transparent
                             color: "#000000", // Black border color
                             weight: 1
@@ -284,4 +335,25 @@ function EU() {
             }).addTo(map);
         })
         .catch(error => console.error('Error loading the EU GeoJSON file:', error));
+}
+
+function showShopsInRadius(centerCoords, radius) {
+    // Clear previous shop layers
+    Object.keys(shopLayers).forEach(key => {
+        if (shopLayers[key]) {
+            shopLayers[key].clearLayers(); // Clear layers but keep the layerGroup for future use
+        }
+    });
+
+    // Loop through each shop layer and add it to the map if it's within the radius
+    Object.keys(shopLayers).forEach(shopTag => {
+        if (shopLayers[shopTag]) {
+            shopLayers[shopTag].eachLayer(function(layer) {
+                var distance = map.distance(centerCoords, layer.getLatLng());
+                if (distance <= radius) {
+                    layer.addTo(map);
+                }
+            });
+        }
+    });
 }
