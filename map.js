@@ -7,7 +7,7 @@ var polandBounds = [
     [49.0, 14.1], // Southwest coordinates
     [55.0, 24.1]  // Northeast coordinates
 ];
-const searchRadius = 2000; // 2 km
+const searchRadius = 1000; // 2 km
 
 // Mapping of city names to their coordinates
 const cityCoordinates = {
@@ -52,9 +52,10 @@ function initializeMap() {
     loadPolandBorders();
     
     // Initialize shop layers without adding them to the map
-    var shopTypes = ["biedronka", "Lidl", "Carrefour", "Auchan"]; // Add other shop types if necessary
+    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan"]; // Add other shop types if necessary
     shopTypes.forEach(shopType => {
-        shopLayers[shopType] = L.layerGroup();
+        // Convert shopType to lowercase
+        shopLayers[shopType.toLowerCase()] = L.layerGroup().addTo(map); 
     });
 
     // Add the tile layer to the map
@@ -121,34 +122,41 @@ function attachEventListeners() {
 
 function showCity() {
     city = document.getElementById("citySelector").value;
-    
+
     // Clear previous city data
     if (geojsonLayer) {
         geojsonLayer.remove();
         geojsonLayer = null;
     }
     
-    // Remove previous shop layers
+    // Remove previous shop layers and markers
     Object.keys(shopLayers).forEach(key => {
         if (shopLayers[key]) {
-            shopLayers[key].remove();
-            shopLayers[key] = null;
+            shopLayers[key].clearLayers(); // Clear markers from the layer
+            shopLayers[key].remove(); // Remove layer from map
+            delete shopLayers[key]; // Delete the key from the shopLayers object
         }
     });
 
-    // Clear the shopLayers object
-    shopLayers = {};
-    
+    // Reinitialize shop layers without adding them to the map
+    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan"]; // Add other shop types if necessary
+    shopTypes.forEach(shopType => {
+        shopLayers[shopType.toLowerCase()] = L.layerGroup(); // Don't add to map yet
+    });
+
     // Remove the previous green square marker if it exists
     if (currentGreenSquareMarker) {
         map.removeLayer(currentGreenSquareMarker);
         currentGreenSquareMarker = null;
     }
     
+    // Clear the address input
+    document.getElementById('addressInput').value = '';
+
     // Set view and load data based on selected city
     if (city && city !== 'Wybierz miasto') {
         map.setView(cityCoordinates[city], 13);
-        loadGeoJson(city);
+        loadGeoJson(city); // Load city-specific data
     } else {
         // Set view for Poland and load borders
         map.setView([52.0693, 19.4803], 6);
@@ -188,14 +196,20 @@ function onEachFeature(feature, layer) {
             var marker = L.marker([coord[0], coord[1]], {icon: customIcon}); // Leaflet expects [lat, lng]
             marker.bindPopup('<b>' + feature.properties.shopName + '</b>');
 
-            var shopTag = feature.properties.tag;
+            var shopTag = feature.properties.tag.toLowerCase(); // Convert tag to lowercase
+
+            // Check if the shopLayer for this tag exists
             if (!shopLayers[shopTag]) {
-                shopLayers[shopTag] = L.layerGroup().addTo(map); // Initialize and add to map
+                console.error("Shop layer not found for tag:", shopTag);
+                // Optionally, you could initialize the layer here if it doesn't exist
+                shopLayers[shopTag] = L.layerGroup().addTo(map);
+            } else {
+                shopLayers[shopTag].addLayer(marker); // Add marker to the corresponding layer group
             }
-            shopLayers[shopTag].addLayer(marker); // Add marker to the corresponding layer group
         });
     }
 }
+
 
 function geocodeAddress(address, city) {
     let queryString = `https://nominatim.openstreetmap.org/search?format=json&q=${address}`;
@@ -246,16 +260,17 @@ function updateShopsDisplay() {
     var checkboxes = document.querySelectorAll('#shopSelector input[type="checkbox"]');
     checkboxes.forEach(checkbox => {
         if (checkbox.checked) {
-            if (shopLayers[checkbox.value]) {
-                shopLayers[checkbox.value].addTo(map);
+            if (shopLayers[checkbox.value.toLowerCase()]) { // Use toLowerCase() to ensure consistency
+                shopLayers[checkbox.value.toLowerCase()].addTo(map);
             }
         } else {
-            if (shopLayers[checkbox.value]) {
-                map.removeLayer(shopLayers[checkbox.value]);
+            if (shopLayers[checkbox.value.toLowerCase()]) {
+                map.removeLayer(shopLayers[checkbox.value.toLowerCase()]);
             }
         }
     });
 }
+
 
 function toggleDarkMode() {
     var isDarkMode = document.body.classList.toggle('dark-mode');
@@ -329,31 +344,80 @@ function EU() {
         .catch(error => console.error('Error loading the EU GeoJSON file:', error));
 }
 
-function showShopsInRadius(centerCoords, radius) {
-    console.log(`Checking shops within radius: ${radius} meters of ${centerCoords}`);
+function countAllVisibleShops() {
+    let totalVisibleShops = 0;
+    let detailedVisibleShops = [];
 
-    // Clear previous shop layers from the map
-    Object.keys(shopLayers).forEach(key => {
-        if (shopLayers[key]) {
-            shopLayers[key].clearLayers(); // Clear layers but keep the layerGroup for future use
-        }
-    });
+    Object.keys(shopLayers).forEach(shopType => {
+        if (shopLayers[shopType]) {
+            // Get the number of markers in each layer
+            let shopCount = shopLayers[shopType].getLayers().length;
+            totalVisibleShops += shopCount;
 
-    // Loop through each shop layer and add it to the map if it's within the radius
-    Object.keys(shopLayers).forEach(shopTag => {
-        if (shopLayers[shopTag]) {
-            shopLayers[shopTag].eachLayer(function(layer) {
-                var shopCoords = layer.getLatLng();
-                console.log(`Shop coordinates: ${shopCoords}`);
-                var distance = map.distance(centerCoords, shopCoords);
-                console.log(`Distance from center to ${shopTag} shop at ${shopCoords}: ${distance} meters`);
-                
-                if (distance <= radius) {
-                    layer.addTo(map); // Add only if within the radius
-                    shopLayers[shopTag].addLayer(layer);
-                    console.log(`${shopTag} shop within radius: ${shopCoords}`);
-                }
+            // Get detailed information about each shop
+            shopLayers[shopType].eachLayer(function(layer) {
+                let shopCoords = layer.getLatLng();
+                detailedVisibleShops.push({
+                    type: shopType,
+                    lat: shopCoords.lat,
+                    lng: shopCoords.lng
+                });
             });
         }
     });
+
+    console.log("Total visible shops on the map:", totalVisibleShops);
+    console.log("Detailed info of visible shops:", detailedVisibleShops);
+    return {
+        total: totalVisibleShops,
+        details: detailedVisibleShops
+    };
 }
+
+
+var visibleShopsGlobal = [];
+
+function showShopsInRadius(centerCoords, radius) {
+    console.log(`Checking shops within radius: ${radius} meters of ${centerCoords}`);
+    console.log("Current shopLayers:", shopLayers);
+
+    // Clear the global visible shops list at the beginning of each call
+    visibleShopsGlobal = [];
+
+    Object.keys(shopLayers).forEach(shopTag => {
+        console.log(`Checking layer for ${shopTag}`);
+        if (shopLayers[shopTag]) {
+            shopLayers[shopTag].eachLayer(function(layer) {
+                var shopCoords = layer.getLatLng();
+                var distance = map.distance(centerCoords, shopCoords);
+                
+                // Check if the shop is already in the visibleShopsGlobal array to avoid duplicates
+                const isShopAlreadyVisible = visibleShopsGlobal.some(shop => shop.lat === shopCoords.lat && shop.lng === shopCoords.lng);
+
+                if (distance <= radius && !isShopAlreadyVisible) {
+                    console.log(`Adding ${shopTag} shop within radius: ${shopCoords}`);
+                    layer.addTo(map);
+                    shopLayers[shopTag].addLayer(layer);
+
+                    // Add shop coordinates to the global visible shops list
+                    visibleShopsGlobal.push({
+                        type: shopTag,
+                        lat: shopCoords.lat,
+                        lng: shopCoords.lng,
+                        distance: distance
+                    });
+                }
+            });
+        } else {
+            console.log(`No layer found for ${shopTag}`);
+        }
+    });
+
+    // Log the total number of unique visible shops
+    console.log("Total unique visible shops within radius:", visibleShopsGlobal.length);
+    console.log("Visible shops within radius:", visibleShopsGlobal);
+}
+
+// Example of when to call the function
+showShopsInRadius(centerCoords, radius);
+let visibleShopsInfo = countAllVisibleShops(); // This will log and return the count
