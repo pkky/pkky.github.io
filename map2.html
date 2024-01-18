@@ -20,9 +20,14 @@
     <link rel="stylesheet" href="map2.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container-fluid p-0">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="mapa-title">MAPA</h1>
+            </div>
+        </div>
+
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand">MAPA</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -37,42 +42,41 @@
         </nav>
 
         <div class="row mt-4">
-            <div class="col-12">
-                <div class="functions">
-                    <select class="form-control" id="citySelector" onchange="showCity()">
-                        <option value="" selected>Wybierz miasto</option>
-                        <option value="Warsaw">Warszawa</option>
-                        <option value="Lodz">Łódź</option>
-                        <option value="Krakow">Kraków</option>
-                        <option value="Wroclaw">Wrocław</option>
-                        <option value="Bydgoszcz">Bydgoszcz</option>
-                        <option value="Torun">Toruń</option>
-                        <option value="Lublin">Lublin</option>
-                        <option value="Gorzow_Wielkopolski">Gorzów Wielkopolski</option>
-                        <option value="Zielona_Gora">Zielona Góra</option>
-                        <option value="Opole">Opole</option>
-                        <option value="Rzeszow">Rzeszów</option>
-                        <option value="Bialystok">Białystok</option>
-                        <option value="Gdansk">Gdansk</option>
-                        <option value="Katowice">Katowice</option>
-                        <option value="Kielce">Kielce</option>
-                        <option value="Olsztyn">Olsztyn</option>
-                        <option value="Poznan">Poznań</option>
-                        <option value="Szczecin">Szczecin</option>
-                    </select>
-                    <input type="text" id="addressInput" placeholder="Podaj adres" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
-                    <span id="darkModeToggle">🌜</span>
-                </div>
+            <div class="col-lg-8 col-md-6 col-sm-12">
+                <select class="form-control" id="citySelector" onchange="showCity()">
+                    <option value="" selected>Wybierz miasto</option>
+                    <option value="Warsaw">Warszawa</option>
+                    <option value="Lodz">Łódź</option>
+                    <option value="Krakow">Kraków</option>
+                    <option value="Wroclaw">Wrocław</option>
+                    <option value="Bydgoszcz">Bydgoszcz</option>
+                    <option value="Torun">Toruń</option>
+                    <option value="Lublin">Lublin</option>
+                    <option value="Gorzow_Wielkopolski">Gorzów Wielkopolski</option>
+                    <option value="Zielona_Gora">Zielona Góra</option>
+                    <option value="Opole">Opole</option>
+                    <option value="Rzeszow">Rzeszów</option>
+                    <option value="Bialystok">Białystok</option>
+                    <option value="Gdansk">Gdansk</option>
+                    <option value="Katowice">Katowice</option>
+                    <option value="Kielce">Kielce</option>
+                    <option value="Olsztyn">Olsztyn</option>
+                    <option value="Poznan">Poznań</option>
+                    <option value="Szczecin">Szczecin</option>
+                </select>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-12 d-flex">
+                <input type="text" class="form-control flex-grow-1" id="addressInput" placeholder="Podaj adres" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
+                <span id="darkModeToggle">🌜</span>
             </div>
         </div>
 
         <div class="row">
             <div class="col-12">
-                <div class="map" id="mapContainer"></div>
+                <div id="mapContainer"></div>
             </div>
         </div>
     </div>
-
     <script src="map.js"></script>
 </body>
 </html>

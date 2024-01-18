@@ -1,0 +1,79 @@
+/* Resetting margins and paddings */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Styling the body */
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    margin: 20px;
+}
+
+/* Ensure the navbar and content take full width */
+.container-fluid {
+    width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* MAPA title styles */
+.mapa-title {
+    font-size: 2.5em; /* Adjust size as needed */
+    margin: 20px 0; /* Add some margin for spacing */
+    font-weight: bold; /* Make the title bold */
+    color: #333; /* Adjust color as needed */
+    text-align: center; /* Center the title */
+}
+
+/* Adjustments for the main container */
+.container {
+    padding-top: 20px;
+}
+
+/* Style for the map container */
+#mapContainer {
+    width: 100%;
+    height: 640px; /* Adjust based on your requirement */
+    border: 2px solid #444;
+    margin-top: 20px;
+}
+
+/* Adjust styles for the functions row */
+.functions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.functions .form-control, .functions button {
+    flex-grow: 1;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .functions {
+        flex-direction: column;
+    }
+
+    #mapContainer {
+        height: 300px; /* Smaller map on smaller screens */
+    }
+}
+
+/* Make the city selector smaller */
+#citySelector {
+    width: auto; /* Adjust as needed */
+    max-width: 200px; /* Adjust as needed */
+}
+
+/* Style for the dark mode toggle */
+#darkModeToggle {
+    padding-left: 15px;
+    cursor: pointer;
+    font-size: 1.5em;
+}
