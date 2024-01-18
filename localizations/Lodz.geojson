@@ -5,7 +5,7 @@
         "type": "Feature",
         "properties": {
           "shopName": "Biedronka",
-          "image": "biedronka.jpg",
+          "image": "images/biedronka.jpg",
           "tag": "biedronka"
         },
         "geometry": {

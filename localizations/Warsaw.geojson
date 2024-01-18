@@ -5,7 +5,7 @@
       "type": "Feature",
       "properties": {
         "shopName": "Biedronka",
-        "image": "biedronka.jpg",
+        "image": "images/biedronka.jpg",
         "tag": "biedronka"
       },
       "geometry": {
@@ -187,7 +187,7 @@
       "type": "Feature",
       "properties": {
         "shopName": "Lidl",
-        "image": "lidl.jpg",
+        "image": "images/lidl.jpg",
         "tag": "lidl"
       },
       "geometry": {
@@ -247,7 +247,7 @@
       "type": "Feature",
       "properties": {
         "shopName": "Carrefour",
-        "image": "carrefour.jpg",
+        "image": "images/carrefour.jpg",
         "tag": "carrefour"
       },
       "geometry": {
@@ -268,7 +268,7 @@
       "type": "Feature",
       "properties": {
         "shopName": "Auchan",
-        "image": "auchan.jpg",
+        "image": "images/auchan.jpg",
         "tag": "auchan"
       },
       "geometry": {
@@ -291,7 +291,7 @@
       "type": "Feature",
       "properties": {
         "shopName": "Rossmann",
-        "image": "rossmann.jpg",
+        "image": "images/rossmann.jpg",
         "tag": "rossmann"
       },
       "geometry": {

@@ -179,7 +179,7 @@ function showCity() {
 }
 
 function loadGeoJson(city) {
-    var geoJsonPath = city + '.geojson';
+    var geoJsonPath = 'localizations/' + city + '.geojson';
 
     if (geojsonLayer) {
         geojsonLayer.remove();
@@ -379,7 +379,7 @@ var darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/
 });
 
 function loadPolandBorders() {
-    fetch('map.geojson') // Adjust the path to your GeoJSON file
+    fetch('Map/Poland.geojson') // Adjust the path to your GeoJSON file
         .then(response => response.json())
         .then(data => {
             if (geojsonLayer) {
@@ -401,7 +401,7 @@ function loadPolandBorders() {
 }
 
 function EU() {
-    fetch('EU.json') // Adjust the path to your GeoJSON file for EU
+    fetch('Map/EU.json') // Adjust the path to your GeoJSON file for EU
         .then(response => response.json())
         .then(data => {
             L.geoJSON(data, {
