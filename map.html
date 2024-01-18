@@ -60,20 +60,9 @@
                         <option value="Poznan">Poznań</option>
                         <option value="Szczecin">Szczecin</option>
                     </select>
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Wybierz sklepy
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <form id="shopSelector">
-                                <label class="dropdown-item"><input type="checkbox" value="biedronka" checked> Biedronka</label>
-                                <label class="dropdown-item"><input type="checkbox" value="lidl" checked> Lidl</label>
-                                <label class="dropdown-item"><input type="checkbox" value="carrefour" checked> Carrefour</label>
-                                <label class="dropdown-item"><input type="checkbox" value="auchan" checked> Auchan</label>
-                            </form>
-                        </div>
-                    </div>
                     <input type="text" id="addressInput" placeholder="Podaj adres" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
+                    <input type="number" id="searchRadiusInput" placeholder="Search Radius (meters)" min="100" max="10000" step="100" title="Search Radius (in meters)">
+                    <button id="updateRadiusButton">Update Radius</button>
                     <span id="darkModeToggle">🌜</span>
                 </div>
             </div>

@@ -108,3 +108,12 @@ body.dark-mode .navbar-light .navbar-nav .nav-link {
     height: 20px;
     background-color: green;
 }
+
+#searchRadiusInput {
+    width: auto; /* Adjust based on your layout */
+    margin-right: 10px;
+}
+
+#updateRadiusButton {
+    width: auto; /* Adjust based on your layout */
+}

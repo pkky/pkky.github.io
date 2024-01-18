@@ -7,7 +7,9 @@ var polandBounds = [
     [49.0, 14.1], // Southwest coordinates
     [55.0, 24.1]  // Northeast coordinates
 ];
-const searchRadius = 1000; // 2 km
+let searchRadius = 1000; // 2 km
+var visibleShopsGlobal = [];
+var visibleShopMarkers = [];
 
 // Mapping of city names to their coordinates
 const cityCoordinates = {
@@ -31,11 +33,22 @@ const cityCoordinates = {
     "Szczecin": [53.428543, 14.552812]
 };
 
-
 document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
     attachEventListeners();
 });
+
+function updateSearchRadius() {
+    var newRadius = document.getElementById('searchRadiusInput').value;
+    if (newRadius && !isNaN(newRadius) && newRadius > 0) {
+        searchRadius = parseInt(newRadius, 10);
+        console.log('Updated search radius to:', searchRadius);
+
+        // Optionally, refresh the shops on the map based on the new radius.
+        // You might need to refactor how you store the last searched location 
+        // or trigger the search again if you want the shops to update immediately.
+    }
+}
 
 function initializeMap() {
     // Set the initial view of the map
@@ -45,7 +58,7 @@ function initializeMap() {
     map = L.map('mapContainer', {
         maxBounds: polandBounds,
         maxBoundsViscosity: 1.0,
-        minZoom: 6 // Set minimum zoom level
+        minZoom: 6, // Set minimum zoom level
     }).setView(initialCoordinates, initialZoomLevel);
 
     // Load Poland borders by default
@@ -85,8 +98,14 @@ function resetMapView() {
         currentGreenSquareMarker = null;
     }
 
-    // Set view for Poland and load borders
+    // Set view for Poland, ensure the zoom level is set to 6
     map.setView([52.0693, 19.4803], 6);
+
+    // Set maximum zoom level to 7
+    map.setZoom(6);
+    map.options.minZoom = 6;
+    map.options.maxZoom = 7;
+
     loadPolandBorders();
 }
 
@@ -111,17 +130,21 @@ function clearCityData() {
 
 function attachEventListeners() {
     document.getElementById('citySelector').addEventListener('change', showCity);
-    document.getElementById('shopSelector').addEventListener('change', updateShopsDisplay);
     document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
     document.getElementById('addressInput').addEventListener('change', function(e) {
         var address = e.target.value;
         var city = document.getElementById('citySelector').value;
         geocodeAddress(address, city);
     });
+    document.getElementById('updateRadiusButton').addEventListener('click', updateSearchRadius);  // Add this line
 }
 
 function showCity() {
-    city = document.getElementById("citySelector").value;
+    let city = document.getElementById('citySelector').value;
+
+    // Clear previous city data, shops, and markers
+    clearCityData();
+    clearVisibleShops();
 
     // Clear previous city data
     if (geojsonLayer) {
@@ -155,12 +178,15 @@ function showCity() {
 
     // Set view and load data based on selected city
     if (city && city !== 'Wybierz miasto') {
+        // Allow zooming up to level 19 for specific cities
+        map.options.minZoom = 6;
+        map.options.maxZoom = 19;
+
         map.setView(cityCoordinates[city], 13);
         loadGeoJson(city); // Load city-specific data
     } else {
-        // Set view for Poland and load borders
-        map.setView([52.0693, 19.4803], 6);
-        loadPolandBorders();
+        // Set view for Poland and load borders if 'Wybierz miasto' is selected
+        resetMapView();
     }
 }
 
@@ -231,6 +257,9 @@ function geocodeAddress(address, city) {
                 
                 // Optionally, center the map on the new marker
                 map.setView(coordinates, 15);
+
+                // Clear previously visible shops
+                clearVisibleShops();
                 
                 // Show shops within the radius
                 showShopsInRadius(coordinates, searchRadius);
@@ -239,6 +268,41 @@ function geocodeAddress(address, city) {
             }
         })
         .catch(error => console.error('Error during geocoding:', error));
+}
+
+function clearVisibleShops() {
+    // Remove each marker from the map and clear the array
+    visibleShopMarkers.forEach(marker => {
+        map.removeLayer(marker);
+    });
+    visibleShopMarkers = [];
+}
+
+function showShopsInRadius(centerCoords, radius) {
+    // Clear the global visible shops list at the beginning of each call
+    clearVisibleShops();
+
+    Object.keys(shopLayers).forEach(shopTag => {
+        if (shopLayers[shopTag]) {
+            shopLayers[shopTag].eachLayer(function(layer) {
+                var shopCoords = layer.getLatLng();
+                var distance = map.distance(centerCoords, shopCoords);
+                
+                if (distance <= radius) {
+                    // Check if the shop is already in the visibleShopsGlobal array to avoid duplicates
+                    const isShopAlreadyVisible = visibleShopMarkers.some(marker => marker.getLatLng().equals(shopCoords));
+
+                    if (!isShopAlreadyVisible) {
+                        layer.addTo(map);
+                        shopLayers[shopTag].addLayer(layer);
+
+                        // Add the marker to the visibleShopMarkers list
+                        visibleShopMarkers.push(layer);
+                    }
+                }
+            });
+        }
+    });
 }
 
 function addGreenSquareMarker(lat, lng) {
@@ -343,81 +407,3 @@ function EU() {
         })
         .catch(error => console.error('Error loading the EU GeoJSON file:', error));
 }
-
-function countAllVisibleShops() {
-    let totalVisibleShops = 0;
-    let detailedVisibleShops = [];
-
-    Object.keys(shopLayers).forEach(shopType => {
-        if (shopLayers[shopType]) {
-            // Get the number of markers in each layer
-            let shopCount = shopLayers[shopType].getLayers().length;
-            totalVisibleShops += shopCount;
-
-            // Get detailed information about each shop
-            shopLayers[shopType].eachLayer(function(layer) {
-                let shopCoords = layer.getLatLng();
-                detailedVisibleShops.push({
-                    type: shopType,
-                    lat: shopCoords.lat,
-                    lng: shopCoords.lng
-                });
-            });
-        }
-    });
-
-    console.log("Total visible shops on the map:", totalVisibleShops);
-    console.log("Detailed info of visible shops:", detailedVisibleShops);
-    return {
-        total: totalVisibleShops,
-        details: detailedVisibleShops
-    };
-}
-
-
-var visibleShopsGlobal = [];
-
-function showShopsInRadius(centerCoords, radius) {
-    console.log(`Checking shops within radius: ${radius} meters of ${centerCoords}`);
-    console.log("Current shopLayers:", shopLayers);
-
-    // Clear the global visible shops list at the beginning of each call
-    visibleShopsGlobal = [];
-
-    Object.keys(shopLayers).forEach(shopTag => {
-        console.log(`Checking layer for ${shopTag}`);
-        if (shopLayers[shopTag]) {
-            shopLayers[shopTag].eachLayer(function(layer) {
-                var shopCoords = layer.getLatLng();
-                var distance = map.distance(centerCoords, shopCoords);
-                
-                // Check if the shop is already in the visibleShopsGlobal array to avoid duplicates
-                const isShopAlreadyVisible = visibleShopsGlobal.some(shop => shop.lat === shopCoords.lat && shop.lng === shopCoords.lng);
-
-                if (distance <= radius && !isShopAlreadyVisible) {
-                    console.log(`Adding ${shopTag} shop within radius: ${shopCoords}`);
-                    layer.addTo(map);
-                    shopLayers[shopTag].addLayer(layer);
-
-                    // Add shop coordinates to the global visible shops list
-                    visibleShopsGlobal.push({
-                        type: shopTag,
-                        lat: shopCoords.lat,
-                        lng: shopCoords.lng,
-                        distance: distance
-                    });
-                }
-            });
-        } else {
-            console.log(`No layer found for ${shopTag}`);
-        }
-    });
-
-    // Log the total number of unique visible shops
-    console.log("Total unique visible shops within radius:", visibleShopsGlobal.length);
-    console.log("Visible shops within radius:", visibleShopsGlobal);
-}
-
-// Example of when to call the function
-showShopsInRadius(centerCoords, radius);
-let visibleShopsInfo = countAllVisibleShops(); // This will log and return the count
