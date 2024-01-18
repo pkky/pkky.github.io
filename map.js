@@ -240,7 +240,7 @@ function geocodeAddress(address, city) {
     let addressInput = document.getElementById('addressInput');
 
     // Clear any previous shake and red-border classes
-    addressInput.classList.remove('shake', 'red-border', 'red-border:focus');
+    addressInput.classList.remove('shake', 'red-border');
 
     let queryString = `https://nominatim.openstreetmap.org/search?format=json&q=${address}`;
 
@@ -270,11 +270,11 @@ function geocodeAddress(address, city) {
             } else {
                 console.error('No results found for this address.');
                 // Apply the shake and red-border classes to the address input
-                addressInput.classList.add('shake', 'red-border', 'red-border:focus');
+                addressInput.classList.add('shake', 'red-border');
 
                 // Optionally, remove the shake and red-border classes after some time
                 setTimeout(function() {
-                    addressInput.classList.remove('shake', 'red-border', 'red-border:focus');
+                    addressInput.classList.remove('shake', 'red-border');
                 }, 500); // Duration of shaking animation
             }
         })
