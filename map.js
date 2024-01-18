@@ -54,7 +54,7 @@ function initializeMap() {
     loadPolandBorders();
     
     // Initialize shop layers without adding them to the map
-    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann"]; // Add other shop types if necessary
+    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann", "Kaufland", "Dealz"]; // Add other shop types if necessary
     shopTypes.forEach(shopType => {
         // Convert shopType to lowercase
         shopLayers[shopType.toLowerCase()] = L.layerGroup().addTo(map); 
@@ -150,7 +150,7 @@ function showCity() {
     });
 
     // Reinitialize shop layers without adding them to the map
-    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann"]; // Add other shop types if necessary
+    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann", "Kaufland", "Dealz"]; // Add other shop types if necessary
     shopTypes.forEach(shopType => {
         shopLayers[shopType.toLowerCase()] = L.layerGroup(); // Don't add to map yet
     });
@@ -203,7 +203,7 @@ function onEachFeature(feature, layer) {
         feature.geometry.coordinates.forEach((coord) => {
             var customIcon = L.icon({
                 iconUrl: feature.properties.image,
-                iconSize: [20, 20],
+                iconSize: [40, 40],
                 iconAnchor: [10, 10]
             });
 
