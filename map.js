@@ -54,7 +54,7 @@ function initializeMap() {
     loadPolandBorders();
     
     // Initialize shop layers without adding them to the map
-    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan"]; // Add other shop types if necessary
+    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann"]; // Add other shop types if necessary
     shopTypes.forEach(shopType => {
         // Convert shopType to lowercase
         shopLayers[shopType.toLowerCase()] = L.layerGroup().addTo(map); 
@@ -150,7 +150,7 @@ function showCity() {
     });
 
     // Reinitialize shop layers without adding them to the map
-    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan"]; // Add other shop types if necessary
+    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann"]; // Add other shop types if necessary
     shopTypes.forEach(shopType => {
         shopLayers[shopType.toLowerCase()] = L.layerGroup(); // Don't add to map yet
     });
@@ -208,20 +208,32 @@ function onEachFeature(feature, layer) {
             });
 
             var marker = L.marker([coord[0], coord[1]], {icon: customIcon}); // Leaflet expects [lat, lng]
-            marker.bindPopup('<b>' + feature.properties.shopName + '</b>');
+            marker.bindPopup(function() {
+                if (currentGreenSquareMarker) {
+                    // Calculate distance from green square marker to the shop
+                    var distance = calculateDistance(marker.getLatLng(), currentGreenSquareMarker.getLatLng());
+                    return '<b>' + feature.properties.shopName + '</b><br>Distance: ' + distance + ' meters';
+                } else {
+                    return '<b>' + feature.properties.shopName + '</b><br>Distance: not available';
+                }
+            });
 
             var shopTag = feature.properties.tag.toLowerCase(); // Convert tag to lowercase
 
             // Check if the shopLayer for this tag exists
             if (!shopLayers[shopTag]) {
                 console.error("Shop layer not found for tag:", shopTag);
-                // Optionally, you could initialize the layer here if it doesn't exist
                 shopLayers[shopTag] = L.layerGroup().addTo(map);
             } else {
                 shopLayers[shopTag].addLayer(marker); // Add marker to the corresponding layer group
             }
         });
     }
+}
+
+// Utility function to calculate the distance between two points
+function calculateDistance(latlng1, latlng2) {
+    return map.distance(latlng1, latlng2).toFixed(2); // Distance in meters, rounded to 2 decimals
 }
 
 function geocodeAddress(address, city) {
