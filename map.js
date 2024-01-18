@@ -7,7 +7,7 @@ var polandBounds = [
     [49.0, 14.1], // Southwest coordinates
     [55.0, 24.1]  // Northeast coordinates
 ];
-let searchRadius = 1000; // 2 km
+const searchRadius = 1000; // 2 km
 var visibleShopsGlobal = [];
 var visibleShopMarkers = [];
 
@@ -33,22 +33,11 @@ const cityCoordinates = {
     "Szczecin": [53.428543, 14.552812]
 };
 
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
     attachEventListeners();
 });
-
-function updateSearchRadius() {
-    var newRadius = document.getElementById('searchRadiusInput').value;
-    if (newRadius && !isNaN(newRadius) && newRadius > 0) {
-        searchRadius = parseInt(newRadius, 10);
-        console.log('Updated search radius to:', searchRadius);
-
-        // Optionally, refresh the shops on the map based on the new radius.
-        // You might need to refactor how you store the last searched location 
-        // or trigger the search again if you want the shops to update immediately.
-    }
-}
 
 function initializeMap() {
     // Set the initial view of the map
@@ -136,7 +125,6 @@ function attachEventListeners() {
         var city = document.getElementById('citySelector').value;
         geocodeAddress(address, city);
     });
-    document.getElementById('updateRadiusButton').addEventListener('click', updateSearchRadius);  // Add this line
 }
 
 function showCity() {
@@ -236,10 +224,14 @@ function onEachFeature(feature, layer) {
     }
 }
 
-
 function geocodeAddress(address, city) {
+    let addressInput = document.getElementById('addressInput');
+
+    // Clear any previous shake and red-border classes
+    addressInput.classList.remove('shake', 'red-border', 'red-border:focus');
+
     let queryString = `https://nominatim.openstreetmap.org/search?format=json&q=${address}`;
-    
+
     // Append city to the query if it's selected
     if (city) {
         queryString += `, ${city}`;
@@ -251,23 +243,39 @@ function geocodeAddress(address, city) {
             if (data.length > 0) {
                 // Assuming the first result is the most relevant
                 const coordinates = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-                
+
                 // Add a green square marker to the map at the geocoded location
                 addGreenSquareMarker(coordinates[0], coordinates[1]);
-                
+
                 // Optionally, center the map on the new marker
                 map.setView(coordinates, 15);
 
                 // Clear previously visible shops
                 clearVisibleShops();
-                
+
                 // Show shops within the radius
                 showShopsInRadius(coordinates, searchRadius);
             } else {
                 console.error('No results found for this address.');
+                // Apply the shake and red-border classes to the address input
+                addressInput.classList.add('shake', 'red-border', 'red-border:focus');
+
+                // Optionally, remove the shake and red-border classes after some time
+                setTimeout(function() {
+                    addressInput.classList.remove('shake', 'red-border', 'red-border:focus');
+                }, 500); // Duration of shaking animation
             }
         })
-        .catch(error => console.error('Error during geocoding:', error));
+        .catch(error => {
+            console.error('Error during geocoding:', error);
+            // Apply the shake and red-border classes to the address input in case of an error
+            addressInput.classList.add('shake', 'red-border');
+
+            // Optionally, remove the shake and red-border classes after some time
+            setTimeout(function() {
+                addressInput.classList.remove('shake', 'red-border');
+            }, 500); // Duration of shaking animation
+        });
 }
 
 function clearVisibleShops() {

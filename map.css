@@ -98,6 +98,11 @@ body.dark-mode .navbar-light .navbar-nav .nav-link {
     }
 }
 
+.functions #citySelector {
+    flex: 0 0 300px; /* Set basis to 200px and prevent growing and shrinking */
+    width: 300px; /* Optional: as a fallback */
+}
+
 /* Ensure full width for navbar */
 .navbar-expand-lg {
     width: 100%;
@@ -109,11 +114,19 @@ body.dark-mode .navbar-light .navbar-nav .nav-link {
     background-color: green;
 }
 
-#searchRadiusInput {
-    width: auto; /* Adjust based on your layout */
-    margin-right: 10px;
+.red-border, .red-border:focus {
+    border: 2px solid red;  /* The !important flag may be necessary to override Bootstrap's styles */
 }
 
-#updateRadiusButton {
-    width: auto; /* Adjust based on your layout */
+/* Shaking animation CSS remains the same */
+@keyframes shake {
+    0% { transform: translateX(-10px); }
+    25% { transform: translateX(10px); }
+    50% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+}
+
+.shake {
+    animation: shake 0.3s linear;
 }
