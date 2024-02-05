@@ -1,12 +1,14 @@
 let hasTriedToPress = false;
 
-document.getElementById('yesButton').addEventListener('touchstart', startMoving);
-document.getElementById('noButton').addEventListener('touchstart', startMoving);
+document.getElementById('yesButton').addEventListener('touchstart', enhanceMovement);
+document.getElementById('noButton').addEventListener('touchstart', enhanceMovement);
 
-function startMoving(event) {
+document.getElementById('yesButton').addEventListener('mouseover', moveButton);
+document.getElementById('noButton').addEventListener('mouseover', moveButton);
+
+function enhanceMovement() {
     if (!hasTriedToPress) {
         hasTriedToPress = true;
-        moveButton(event);
     }
 }
 
@@ -17,7 +19,7 @@ function moveButton(event) {
     const newX = Math.random() * (window.innerWidth - button.offsetWidth);
     const newY = Math.random() * (window.innerHeight - button.offsetHeight);
 
-    button.style.position = 'fixed'; // Changed from 'absolute' to 'fixed' for better positioning on mobile
+    button.style.position = 'absolute';
     button.style.left = `${newX}px`;
     button.style.top = `${newY}px`;
 }
