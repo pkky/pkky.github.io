@@ -2,36 +2,83 @@ body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
     margin: 0;
-    padding: 0;
+    padding: 0; /* No padding added to the body */
     color: #333;
+    background: rgb(217, 228, 233); /* Soft Blue for body */
+    scroll-snap-type: y mandatory; /* Enable vertical scroll snapping */
+    overflow-y: scroll; /* Ensures the body can scroll */
 }
 
 header {
-background: #f4f4f4;
-padding: 20px;
-text-align: center;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid gray;
+    background: #e8f1f5; /* Soft Blue for Header */
+    position: sticky; /* Make header sticky */
+    top: 0; /* Stick to the top */
+    z-index: 1000; /* Ensure it's above other content */
 }
 
 header nav ul {
-list-style-type: none;
-padding: 0;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
 }
 
 header nav ul li {
-display: inline;
-margin-right: 10px;
+    display: flex;
+    margin-right: 10px;
+    position: relative;
+}
+
+header nav ul li:not(:last-child)::after {
+    content: '/';
+    color: #ccc; /* Light color for the slash */
+    margin-left: 10px;
 }
 
 header nav ul li a {
-text-decoration: none;
-color: #333;
+    text-decoration: none;
+    color: #333;
+    transition: color 0.3s;
 }
 
-section {
-padding: 20px;
-margin: 20px 0;
+header nav ul li a:hover {
+    color: #555;
 }
 
-h1, h2 {
-color: #333;
+section{
+    padding: 20px; /* Padding for section */
+    margin: 20px 0;
+    scroll-snap-align: start; /* Each section will snap to the start of the container */
+    height: 100vh; /* Optional: makes each section take full viewport height */
+    padding-top: 100px;
+    margin-top: -100px;
+}
+
+/* Adjusting text elements */
+h1, h2, p, nav {
+    color: #333;
+    margin: 0;
+    padding-left: 80px; /* Adding padding to move text to the middle */
+    padding-right: 80px; /* Symmetric padding for right side */
+}
+
+#mapContainer {
+    height: 640px; /* Adjust based on your requirement */
+    border: 2px solid #444;
+    margin-top: 20px;
+}
+
+nav ul li a.active {
+    color: #007bff; /* Change as needed */
+    font-weight: bold;
+}
+
+html {
+    scroll-behavior: smooth;
 }
