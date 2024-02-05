@@ -1,25 +1,26 @@
-let hasTriedToPress = false;
+let hasBeenPressed = false;
 
-document.getElementById('yesButton').addEventListener('touchstart', enhanceMovement);
-document.getElementById('noButton').addEventListener('touchstart', enhanceMovement);
+document.getElementById('yesButton').addEventListener('click', () => startMoving());
+document.getElementById('noButton').addEventListener('click', () => startMoving());
 
-document.getElementById('yesButton').addEventListener('mouseover', moveButton);
-document.getElementById('noButton').addEventListener('mouseover', moveButton);
-
-function enhanceMovement() {
-    if (!hasTriedToPress) {
-        hasTriedToPress = true;
+function startMoving() {
+    if (!hasBeenPressed) {
+        hasBeenPressed = true;
+        moveButton('yesButton');
+        moveButton('noButton');
     }
 }
 
-function moveButton(event) {
-    if (!hasTriedToPress) return;
+function moveButton(buttonId) {
+    if (!hasBeenPressed) return;
 
-    const button = event.target;
+    const button = document.getElementById(buttonId);
     const newX = Math.random() * (window.innerWidth - button.offsetWidth);
     const newY = Math.random() * (window.innerHeight - button.offsetHeight);
 
-    button.style.position = 'absolute';
+    button.style.position = 'fixed';
     button.style.left = `${newX}px`;
     button.style.top = `${newY}px`;
+
+    setTimeout(() => moveButton(buttonId), 50); // Move the button every 50 milliseconds
 }
