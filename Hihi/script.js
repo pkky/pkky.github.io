@@ -1,26 +1,41 @@
-let hasBeenPressed = false;
+let noPressCount = 0;
 
-document.getElementById('yesButton').addEventListener('click', () => startMoving());
-document.getElementById('noButton').addEventListener('click', () => startMoving());
+document.getElementById('noButton').addEventListener('click', handleNoButtonPress);
 
-function startMoving() {
-    if (!hasBeenPressed) {
-        hasBeenPressed = true;
-        moveButton('yesButton');
-        moveButton('noButton');
-    }
+document.getElementById('yesButton').addEventListener('click', handleYesButtonPress);
+
+function handleYesButtonPress() {
+    document.getElementById('yesImageContainer').style.display = 'block';
 }
 
-function moveButton(buttonId) {
-    if (!hasBeenPressed) return;
 
-    const button = document.getElementById(buttonId);
-    const newX = Math.random() * (window.innerWidth - button.offsetWidth);
-    const newY = Math.random() * (window.innerHeight - button.offsetHeight);
+function handleNoButtonPress() {
+    noPressCount++;
+    adjustButtonSizesAndText();
+}
 
-    button.style.position = 'fixed';
-    button.style.left = `${newX}px`;
-    button.style.top = `${newY}px`;
+function adjustButtonSizesAndText() {
+    const yesButton = document.getElementById('yesButton');
+    const noButton = document.getElementById('noButton');
 
-    setTimeout(() => moveButton(buttonId), 50); // Move the button every 50 milliseconds
+    // Adjust size of Yes button based on noPressCount
+    if (noPressCount === 1) {
+        yesButton.style.fontSize = '64px'; // Slightly larger for the first press
+    } else if (noPressCount === 2) {
+        yesButton.style.fontSize = '192px'; // Even larger for the second press
+    } else if (noPressCount >= 3) {
+        yesButton.style.fontSize = '350px'; // Largest size for three or more presses
+    }
+
+    // Decrease size of No button but not less than 12px
+    noButton.style.fontSize = `${Math.max(16 - noPressCount, 12)}px`;
+
+    // Change text of No button based on noPressCount
+    if (noPressCount === 1) {
+        noButton.textContent = 'Are you sure?';
+    } else if (noPressCount === 2) {
+        noButton.textContent = 'Are you sure?!?!';
+    } else if (noPressCount >= 3) {
+        noButton.textContent = 'WTF?!?!?!';
+    }
 }
