@@ -7,7 +7,7 @@ var polandBounds = [
     [49.0, 14.1], // Southwest coordinates
     [55.0, 24.1]  // Northeast coordinates
 ];
-const searchRadius = 1000; // 2 km
+const searchRadius = 10000;
 var visibleShopsGlobal = [];
 var visibleShopMarkers = [];
 
