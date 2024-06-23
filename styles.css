@@ -211,6 +211,7 @@ html {
     max-height: 300px;
     overflow-y: auto;
     margin-top: 10px;
+    width: 75%;
 }
 
 .hidden {
@@ -220,13 +221,13 @@ html {
 .project-link {
     cursor: pointer;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     text-decoration: none; /* Remove underline */
 }
 
 .project-link i {
-    margin-left: 10px; /* Adjust this value to reduce/increase spacing between text and icon */
+    margin-left: 5px; /* Adjust this value to reduce/increase spacing between text and icon */
+    flex-shrink: 0;
 }
 
 #project-list li {
