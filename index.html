@@ -154,10 +154,10 @@
                 <option value="Poznan">Poznań</option>
                 <option value="Szczecin">Szczecin</option>
             </select>
-            <input type="text" id="addressInput" placeholder="Podaj ulicę" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
+            <input type="text" id="addressInput" placeholder="Podaj adres" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
             <span id="darkModeToggle">🌜</span>
             <div class="dropdown">
-                <button onclick="toggleDropdown()" class="dropbtn">Wybierz sklepy</button>
+                <button onclick="toggleDropdown()" class="dropbtn">Select Shops</button>
                 <div id="shopToggleContainer" class="dropdown-content">
                     <label><input type="checkbox" class="shopToggle" value="biedronka" checked> Biedronka</label>
                     <label><input type="checkbox" class="shopToggle" value="lidl" checked> Lidl</label>
@@ -170,7 +170,7 @@
             </div>
         </div>
         <div id="radiusSliderContainer">
-            <label for="radiusSlider">Zakres sklepów: <span id="radiusValue">1500</span> metrów</label>
+            <label for="radiusSlider">Search Radius: <span id="radiusValue">1500</span> meters</label>
             <input type="range" id="radiusSlider" min="100" max="15000" step="100" value="1500" oninput="updateSearchRadius(this.value)">
         </div>
         <div id="mapContainer"></div>

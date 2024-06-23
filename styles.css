@@ -19,7 +19,7 @@ body {
 }
 
 header {
-    padding: 20px;
+    padding: 10px;
     text-align: center;
     display: flex;
     justify-content: space-between;
@@ -31,6 +31,10 @@ header {
     z-index: 1000;
 }
 
+header h1 {
+    font-size: 1.5rem;
+}
+
 header nav ul {
     list-style-type: none;
     padding: 0;
@@ -39,21 +43,14 @@ header nav ul {
 }
 
 header nav ul li {
-    display: flex;
     margin-right: 10px;
-    position: relative;
-}
-
-header nav ul li:not(:last-child)::after {
-    content: '/';
-    color: #ccc;
-    margin-left: 10px;
 }
 
 header nav ul li a {
     text-decoration: none;
     color: var(--text-color);
     transition: color 0.3s;
+    padding: 5px;
 }
 
 header nav ul li a:hover {
@@ -72,17 +69,13 @@ section {
 h1, h2, p, nav {
     color: var(--text-color);
     margin: 0;
-    padding-left: 80px;
-    padding-right: 80px;
 }
 
 #mapContainer {
     height: 640px;
     border: 2px solid #444;
     margin-top: 20px;
-    width: calc(100% - 160px); /* Same padding as sections */
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
 }
 
 nav ul li a.active {
@@ -98,8 +91,8 @@ html {
 .dropbtn {
     background-color: #4CAF50;
     color: white;
-    padding: 16px;
-    font-size: 16px;
+    padding: 10px;
+    font-size: 14px;
     border: none;
     cursor: pointer;
 }
@@ -154,9 +147,7 @@ html {
     height: 640px;
     border: 2px solid #444;
     margin-top: 20px;
-    width: calc(100% - 160px);
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
     z-index: 1;
     position: relative;
 }
@@ -166,13 +157,10 @@ html {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    padding-left: 80px;
-    padding-right: 1200px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
-#citySelector {
-    padding: 10px;
-}
 #contact a {
     color: var(--text-color);
     text-decoration: none;
@@ -192,7 +180,6 @@ html {
     display: flex;
     align-items: center;
     margin-top: 10px;
-    margin-left: 80px;
 }
 
 #radiusSliderContainer label {
@@ -208,6 +195,13 @@ html {
     cursor: pointer;
     padding: 10px;
     margin-left: 10px;
+}
+
+/* Project section styling */
+#projects {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .project-content {
@@ -229,9 +223,6 @@ html {
     justify-content: space-between;
     align-items: center;
     text-decoration: none; /* Remove underline */
-    width: calc(100% - 160px);
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .project-link i {
@@ -254,4 +245,60 @@ html {
 .rotate-down {
     transform: rotate(0deg);
     transition: transform 0.3s;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    header nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    header nav ul li {
+        margin-bottom: 10px;
+    }
+
+    header h1 {
+        font-size: 1.2rem;
+    }
+
+    #map-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #contact a {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #contact i {
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    header nav ul li a {
+        font-size: 14px;
+    }
+
+    #map-controls {
+        align-items: center;
+    }
+
+    #radiusSliderContainer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #addressInput {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    #darkModeToggle {
+        margin-left: 0;
+        margin-top: 10px;
+    }
 }
