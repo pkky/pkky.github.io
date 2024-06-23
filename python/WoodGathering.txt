@@ -1,0 +1,301 @@
+import pygame
+import sys
+import random
+import time
+import tkinter as tk
+from collections import defaultdict
+
+# Initialize Pygame
+pygame.init()
+
+# Constants
+GRID_SIZE = 60
+CELL_SIZE = 10
+SCREEN_WIDTH = GRID_SIZE * CELL_SIZE
+SCREEN_HEIGHT = GRID_SIZE * CELL_SIZE
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+BUTTON_COLOR = (100, 100, 100)
+BUTTON_TEXT_COLOR = (255, 255, 255)
+BUTTON_WIDTH = 100
+BUTTON_HEIGHT = 40
+BUTTON_TEXT = 'Lumber'
+BUILDING_COLOR = (139, 69, 19)
+BUILDING_GHOST_COLOR = RED
+BUILDING_SIZE = 3
+AGENT_COLOR = (0, 128, 0)
+AGENT_SPEED = 1 / 60
+WOOD_VALUE = 1
+
+# Create the screen
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT + BUTTON_HEIGHT))
+pygame.display.set_caption("Lumber Game by PKKY")
+
+# Create the button
+button_rect = pygame.Rect((SCREEN_WIDTH - BUTTON_WIDTH) // 2, SCREEN_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT)
+
+# Create a font for the button text and resource count
+font = pygame.font.Font(None, 36)
+count_font = pygame.font.Font(None, 24)
+
+# Initial states
+building = False
+building_placed = False
+building_cells = []
+building_ghost_cells = []
+building_color = BUILDING_COLOR
+trees = [(random.randint(0, GRID_SIZE-1), random.randint(0, GRID_SIZE-1)) for _ in range(100)]
+agents_positions = []
+resources_count = 0
+agent_states = defaultdict(str)
+agent_carry = defaultdict(int)
+
+building_window_open = False
+last_update_time = time.time()
+building_center = None
+
+resources = {"wood": 0}
+
+def nearest_tree(agent_position):
+    min_distance = float('inf')
+    nearest = None
+    for tree_x, tree_y in trees:
+        distance = abs(agent_position[0] - tree_x) + abs(agent_position[1] - tree_y)
+        if distance < min_distance:
+            min_distance = distance
+            nearest = (tree_x, tree_y)
+    if nearest is None:
+        print("No tree found for agent at", agent_position)
+        return None
+    return nearest
+
+def distance(p1, p2):
+    return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
+    
+
+def move_agent(agent_position, target_position, agents_positions):
+    dx = target_position[0] - agent_position[0]
+    dy = target_position[1] - agent_position[1]
+
+    # Determine the move direction for x and y
+    step_x = 0 if dx == 0 else (1 if dx > 0 else -1)
+    step_y = 0 if dy == 0 else (1 if dy > 0 else -1)
+
+    # Prioritize movement in the direction of the largest difference
+    if abs(dx) > abs(dy):
+        next_position = (agent_position[0] + step_x, agent_position[1])
+    else:
+        next_position = (agent_position[0], agent_position[1] + step_y)
+
+    # If next_position is occupied by another agent, try to find an alternative position
+    if next_position in agents_positions:
+        # Check all neighbors
+        neighbors = [
+            (agent_position[0] + 1, agent_position[1]),
+            (agent_position[0] - 1, agent_position[1]),
+            (agent_position[0], agent_position[1] + 1),
+            (agent_position[0], agent_position[1] - 1)
+        ]
+
+        # Find the unoccupied neighbor that's closest to the target
+        neighbors = sorted(neighbors, key=lambda pos: distance(pos, target_position))
+        for neighbor in neighbors:
+            if neighbor not in agents_positions:
+                return neighbor
+
+        # If all neighbors are occupied, remain in the current position
+        return agent_position
+
+    return next_position
+
+def is_agent_at_position(position, agents_positions):
+    return position in agents_positions
+    
+def show_building_info():
+    global building_window_open
+    if building_window_open:
+        return
+    
+    building_window_open = True
+
+    def on_closing():
+        global building_window_open
+        building_window_open = False
+        building_info_window.destroy()
+
+    building_info_window = tk.Tk()
+    building_info_window.title("Building Info")
+    tk.Label(building_info_window, text="Building Name: Example Building").pack()
+    tk.Label(building_info_window, text="Workers: 2").pack()
+    tk.Label(building_info_window, text="Hour Production: 100 units").pack()
+    building_info_window.protocol("WM_DELETE_WINDOW", on_closing)
+    building_info_window.overrideredirect(1)
+    building_info_window.update()
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if button_rect.collidepoint(event.pos):
+                if not building_placed:
+                    building = not building
+                else:
+                    print("Building already placed. Cannot build another.")
+            elif building and not building_placed:
+                grid_x = event.pos[0] // CELL_SIZE
+                grid_y = event.pos[1] // CELL_SIZE
+                if grid_x + BUILDING_SIZE <= GRID_SIZE and grid_y + BUILDING_SIZE <= GRID_SIZE:
+                    potential_building_cells = [(grid_x + i, grid_y + j) for i in range(BUILDING_SIZE) for j in range(BUILDING_SIZE)]
+                    if not any(cell in trees for cell in potential_building_cells):
+                        building_cells.extend(potential_building_cells)
+                        middle_x = grid_x + BUILDING_SIZE // 2
+                        middle_y = grid_y + BUILDING_SIZE // 2
+                        building_cells.append((middle_x, middle_y))
+                        agents_positions = [(middle_x, middle_y - 1), (middle_x, middle_y + 1)]
+                        for agent in agents_positions:
+                            agent_states[agent] = 'moving_to_tree'
+                        building_placed = True
+                        building_center = (middle_x, middle_y)
+
+            elif building_placed:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                grid_x = mouse_x // CELL_SIZE
+                grid_y = mouse_y // CELL_SIZE
+                if (grid_x, grid_y) in building_cells:
+                    show_building_info()
+                    
+    if trees and 'circling_building' in agent_states.values():
+        for agent_position, state in list(agent_states.items()):
+            if state == 'circling_building':
+                agent_states[agent_position] = 'moving_to_tree'
+
+    screen.fill(WHITE)
+
+    # Draw the grid
+    for x in range(0, SCREEN_WIDTH, CELL_SIZE):
+        pygame.draw.line(screen, BLACK, (x, 0), (x, SCREEN_HEIGHT))
+    for y in range(0, SCREEN_HEIGHT, CELL_SIZE):
+        pygame.draw.line(screen, BLACK, (0, y), (SCREEN_WIDTH, y))
+
+    # Draw the trees
+    for tree_x, tree_y in trees:
+        pygame.draw.rect(screen, GREEN, (tree_x * CELL_SIZE, tree_y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+    # Draw the building or the building ghost
+    if building and not building_placed:
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        grid_x = mouse_x // CELL_SIZE
+        grid_y = mouse_y // CELL_SIZE
+        if grid_x + BUILDING_SIZE <= GRID_SIZE and grid_y + BUILDING_SIZE <= GRID_SIZE:
+            potential_building_cells = [(grid_x + i, grid_y + j) for i in range(BUILDING_SIZE) for j in range(BUILDING_SIZE)]
+            if any(cell in trees for cell in potential_building_cells):
+                building_color = BUILDING_GHOST_COLOR
+            else:
+                building_color = BUILDING_COLOR
+
+            for x in range(BUILDING_SIZE):
+                for y in range(BUILDING_SIZE):
+                    pygame.draw.rect(screen, building_color, ((grid_x + x) * CELL_SIZE, (grid_y + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+    # Check if there are only 25 trees left and spawn 75 new ones
+    if len(trees) == 25:
+        new_trees = [(random.randint(0, GRID_SIZE-1), random.randint(0, GRID_SIZE-1)) for _ in range(75)]
+        trees.extend(new_trees)
+
+    if building_cells:
+        for cell_x, cell_y in building_cells:
+            pygame.draw.rect(screen, BUILDING_COLOR, (cell_x * CELL_SIZE, cell_y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+    current_time = time.time()
+    if current_time - last_update_time > AGENT_SPEED:  # Check if we should move the agents
+        for agent_position in list(agent_states.keys()):
+            if agent_states[agent_position] == 'moving_to_tree':
+                tree = nearest_tree(agent_position)
+                if tree is None:
+                    agent_states[agent_position] = 'circling_building'
+                    continue
+                if tree not in trees:  # Check if the tree still exists
+                    tree = nearest_tree(agent_position)  # Find a new tree
+                    if tree is None:
+                        agent_states[agent_position] = 'circling_building'
+                        continue
+                if tree:
+                    if agent_position == tree:
+                        trees.remove(tree)
+                        agent_carry[agent_position] += random.randint(3, 5)  # Get random wood between 3 or 5
+                        print(f"{agent_position} has chopped wood. Now carrying {agent_carry[agent_position]}.")
+                        agent_states[agent_position] = 'returning_to_building'  # State change after chopping
+                        
+                    else:
+                        new_position = move_agent(agent_position, tree, agent_states.keys())
+                        agent_states[new_position] = agent_states[agent_position]  # Transfer state
+                        agent_carry[new_position] = agent_carry[agent_position]  # Transfer wood carried
+                        del agent_states[agent_position]  # Remove old position
+                        agents_positions[agents_positions.index(agent_position)] = new_position
+                        del agent_carry[agent_position]  # Remove wood carried count for old position
+                else:
+                    agent_states[agent_position] = 'circling_building'
+                    print(f"Unhandled agent state for {agent_position}: {agent_states[agent_position]}")
+            
+            elif agent_states[agent_position] == 'returning_to_building':
+                print(f"{agent_position} is returning to building...")
+                new_position = move_agent(agent_position, building_center, agent_states.keys())
+                if new_position != agent_position:
+                    agent_states[new_position] = agent_states[agent_position]  # Transfer state
+                    agent_carry[new_position] = agent_carry[agent_position]  # Transfer wood carried
+                    del agent_states[agent_position]  # Remove old position
+                    agents_positions[agents_positions.index(agent_position)] = new_position
+                    del agent_carry[agent_position]  # Remove wood carried count for old position
+                
+                # Check if agent is adjacent to the building
+                dx = abs(new_position[0] - building_center[0])
+                dy = abs(new_position[1] - building_center[1])
+                if (dx <= 1 and dy == 0) or (dy <= 1 and dx == 0):
+                    print(f"{agent_position} has reached the building with {agent_carry[new_position]} wood.")
+                    resources["wood"] += agent_carry[new_position]  # Add the wood carried by the agent to the resources
+                    agent_carry[new_position] = 0  # Reset the wood carried by the agent
+                    agent_states[new_position] = 'moving_to_tree'  # Reset agent's state to get more wood
+
+            elif agent_states[agent_position] == 'circling_building':
+                dx, dy = 0, 0
+                if agent_position[0] != building_center[0]:
+                    if agent_position[0] < building_center[0]:
+                        dx = 1
+                    else:
+                        dx = -1
+                elif agent_position[1] != building_center[1]:
+                    if agent_position[1] < building_center[1]:
+                        dy = 1
+                    else:
+                        dy = -1
+                
+                new_position = (agent_position[0] + dx, agent_position[1] + dy)
+                agent_states[new_position] = 'circling_building'
+                agents_positions[agents_positions.index(agent_position)] = new_position
+                del agent_states[agent_position]
+        last_update_time = current_time  # Update the last update time
+
+    # Draw the agents
+    for agent_x, agent_y in agents_positions:
+        pygame.draw.rect(screen, AGENT_COLOR, (agent_x * CELL_SIZE, agent_y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+
+    # Draw the button
+    pygame.draw.rect(screen, BUTTON_COLOR, button_rect)
+    button_text = font.render(BUTTON_TEXT, True, BUTTON_TEXT_COLOR)
+    button_text_rect = button_text.get_rect(center=button_rect.center)
+    screen.blit(button_text, button_text_rect)
+
+    # Draw resource count
+    resource_text = count_font.render(f"Wood: {resources['wood']}", True, BLACK)
+    resource_text_rect = resource_text.get_rect(topleft=(10, SCREEN_HEIGHT + 10))
+    screen.blit(resource_text, resource_text_rect)
+
+    pygame.display.flip()
+pygame.quit()
+sys.exit()

@@ -1,0 +1,222 @@
+import streamlit as st
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+
+# Constants
+I0, R0, E0, V0, M0 = 1, 0, 0, 0, 0
+
+# Differential Equations for Each Model
+def SI(y, t, N, beta):
+    S, I = y
+    dSdt = -beta * S * I / N
+    dIdt = beta * S * I / N
+    return dSdt, dIdt
+
+def SIS(y, t, N, beta, gamma):
+    S, I = y
+    dSdt = -beta * S * I / N + gamma * I
+    dIdt = beta * S * I / N - gamma * I
+    return dSdt, dIdt
+
+def SIR(y, t, N, beta, gamma):
+    S, I, R = y
+    dSdt = -beta * S * I / N
+    dIdt = beta * S * I / N - gamma * I
+    dRdt = gamma * I
+    return dSdt, dIdt, dRdt
+
+def SIRS(y, t, N, beta, gamma, xi):
+    S, I, R = y
+    dSdt = -beta * S * I / N + xi * R
+    dIdt = beta * S * I / N - gamma * I
+    dRdt = gamma * I - xi * R
+    return dSdt, dIdt, dRdt
+
+def SIRD(y, t, N, beta, gamma, mu):
+    S, I, R, D = y
+    dSdt = -beta * S * I / N
+    dIdt = beta * S * I / N - gamma * I - mu * I
+    dRdt = gamma * I
+    dDdt = mu * I
+    return dSdt, dIdt, dRdt, dDdt
+
+def SIRV(y, t, N, beta, gamma, xi):
+    S, I, R, V = y
+    dSdt = -beta * S * I / N - xi * S
+    dIdt = beta * S * I / N - gamma * I
+    dRdt = gamma * I
+    dVdt = xi * S
+    return dSdt, dIdt, dRdt, dVdt
+
+def SEIR(y, t, N, beta, sigma, gamma):
+    S, E, I, R = y
+    dSdt = -beta * S * I / N
+    dEdt = beta * S * I / N - sigma * E
+    dIdt = sigma * E - gamma * I
+    dRdt = gamma * I
+    return dSdt, dEdt, dIdt, dRdt
+
+def SEIRS(y, t, N, beta, gamma, delta, xi):
+    S, E, I, R = y
+    dSdt = -beta * S * I / N + xi * R
+    dEdt = beta * S * I / N - delta * E
+    dIdt = delta * E - gamma * I
+    dRdt = gamma * I - xi * R
+    return dSdt, dEdt, dIdt, dRdt
+
+def SEIS(y, t, N, beta, sigma, gamma):
+    S, E, I = y
+    dSdt = gamma * I - beta * S * I / N
+    dEdt = beta * S * I / N - sigma * E
+    dIdt = sigma * E - gamma * I
+    return dSdt, dEdt, dIdt
+
+def MSIR(y, t, N, beta, gamma, xi):
+    M, S, I, R = y
+    dMdt = -xi * M
+    dSdt = xi * M - beta * S * I / N
+    dIdt = beta * S * I / N - gamma * I
+    dRdt = gamma * I
+    return dMdt, dSdt, dIdt, dRdt
+
+def MSEIR(y, t, N, mu, beta, sigma, gamma):
+    M, S, E, I, R = y
+    dMdt = mu * N - mu * M - sigma * M
+    dSdt = sigma * M - beta * S * I / N
+    dEdt = beta * S * I / N - sigma * E
+    dIdt = sigma * E - gamma * I
+    dRdt = gamma * I
+    return dMdt, dSdt, dEdt, dIdt, dRdt
+
+def MSEIRS(y, t, N, mu, beta, sigma, gamma, epsilon):
+    M, S, E, I, R = y
+    dMdt = mu * N - mu * M - sigma * M
+    dSdt = sigma * M - beta * S * I / N + epsilon * R
+    dEdt = beta * S * I / N - sigma * E
+    dIdt = sigma * E - gamma * I
+    dRdt = gamma * I - epsilon * R
+    return dMdt, dSdt, dEdt, dIdt, dRdt
+
+def main():
+    st.title("Interactive Epidemiological Models")
+
+    # Slider for the population size
+    N = st.slider("Population Size", min_value=100, max_value=1000000, value=1000, step=100)
+    S0 = N - I0
+
+    # Slider for the number of days for the simulation
+    days = st.slider("Number of Days", min_value=10, max_value=365, value=160)
+    t = np.linspace(0, days, days)
+
+    model_choice = st.selectbox("Choose Model", ['SI', 'SIS', 'SIR', 'SIRD', 'SIRV', 'MSIR', 'SEIR', 'SEIRS', 'MSEIR', 'MSEIRS', 'SEIS'])
+
+    if model_choice == 'SI':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        ret = odeint(SI, (S0, I0), t, args=(N, beta))
+        S, I = ret.T
+        to_display = {"Susceptible": S, "Infected": I}
+
+    elif model_choice == 'SIS':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        ret = odeint(SIS, (S0, I0), t, args=(N, beta, gamma))
+        S, I = ret.T
+        to_display = {"Susceptible": S, "Infected": I}
+
+    elif model_choice == 'SIR':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        ret = odeint(SIR, (S0, I0, R0), t, args=(N, beta, gamma))
+        S, I, R = ret.T
+        to_display = {"Susceptible": S, "Infected": I, "Recovered": R}
+
+    elif model_choice == 'SIRS':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        xi = st.slider("ξ (Loss of immunity rate)", min_value=0.0, max_value=0.1, value=0.01, step=0.001)
+        ret = odeint(SIRS, (S0, I0, R0), t, args=(N, beta, gamma, xi))
+        S, I, R = ret.T
+        to_display = {"Susceptible": S, "Infected": I, "Recovered": R}
+
+    elif model_choice == 'SIRD':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        mu = st.slider("μ (Mortality rate)", min_value=0.0, max_value=0.1, value=0.01, step=0.001)
+        ret = odeint(SIRD, (S0, I0, R0, 0), t, args=(N, beta, gamma, mu))
+        S, I, R, D = ret.T
+        to_display = {"Susceptible": S, "Infected": I, "Recovered": R, "Deceased": D}
+
+    elif model_choice == 'SIRV':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        xi = st.slider("ξ (Vaccination rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        ret = odeint(SIRV, (S0, I0, R0, V0), t, args=(N, beta, gamma, xi))
+        S, I, R, V = ret.T
+        to_display = {"Susceptible": S, "Infected": I, "Recovered": R, "Vaccinated": V}
+
+    elif model_choice == 'SEIR':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        sigma = st.slider("σ (Rate from exposure to infection)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        ret = odeint(SEIR, (S0, E0, I0, R0), t, args=(N, beta, sigma, gamma))
+        S, E, I, R = ret.T
+        to_display = {"Susceptible": S, "Exposed": E, "Infected": I, "Recovered": R}
+
+    elif model_choice == 'SEIRS':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        delta = st.slider("δ (Incubation rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        xi = st.slider("ξ (Loss of immunity rate)", min_value=0.0, max_value=0.1, value=0.01, step=0.001)
+        ret = odeint(SEIRS, (S0, E0, I0, R0), t, args=(N, beta, gamma, delta, xi))
+        S, E, I, R = ret.T
+        to_display = {"Susceptible": S, "Exposed": E, "Infected": I, "Recovered": R}    
+
+    elif model_choice == 'MSIR':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        xi = st.slider("ξ (Loss of immunity rate)", min_value=0.0, max_value=0.1, value=0.01, step=0.001)
+        ret = odeint(MSIR, (S0, I0, R0, 0), t, args=(N, beta, gamma, xi))
+        M, S, I, R = ret.T
+        to_display = {"Maternal Immunity": M, "Susceptible": S, "Infected": I, "Recovered": R}
+
+    elif model_choice == 'MSEIR':
+        mu = st.slider("μ (Birth and death rate)", min_value=0.0, max_value=1.0, value=0.02, step=0.01)
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        sigma = st.slider("σ (Rate from exposure to infection)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        ret = odeint(MSEIR, (M0, S0, E0, I0, R0), t, args=(N, mu, beta, sigma, gamma))
+        M, S, E, I, R = ret.T
+        to_display = {"Maternal Immunity": M, "Susceptible": S, "Exposed": E, "Infected": I, "Recovered": R}
+    
+    elif model_choice == 'MSEIRS':
+        mu = st.slider("μ (Birth and death rate)", min_value=0.0, max_value=1.0, value=0.02, step=0.01)
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        sigma = st.slider("σ (Rate from exposure to infection)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        gamma = st.slider("γ (Recovery rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        epsilon = st.slider("ε (Loss of immunity rate)", min_value=0.0, max_value=1.0, value=0.02, step=0.01)
+        ret = odeint(MSEIRS, (M0, S0, E0, I0, R0), t, args=(N, mu, beta, sigma, gamma, epsilon))
+        M, S, E, I, R = ret.T
+        to_display = {"Maternal Immunity": M, "Susceptible": S, "Exposed": E, "Infected": I, "Recovered": R}
+
+    elif model_choice == 'SEIS':
+        beta = st.slider("β (Infection rate)", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
+        sigma = st.slider("σ (Rate from exposure to infection)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        gamma = st.slider("γ (Return to susceptibility rate)", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+        ret = odeint(SEIS, (S0, E0, I0), t, args=(N, beta, sigma, gamma))
+        S, E, I = ret.T
+        to_display = {"Susceptible": S, "Exposed": E, "Infected": I}
+
+    # Plotting
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for label, data in to_display.items():
+        ax.plot(t, data, label=label)
+    
+    ax.set_xlabel('Days')
+    ax.set_ylabel('Population')
+    ax.legend()
+    ax.grid(True)
+    st.pyplot(fig)
+
+if __name__ == "__main__":
+    main()

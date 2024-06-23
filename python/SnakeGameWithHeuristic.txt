@@ -1,0 +1,162 @@
+import pygame
+import sys
+import random
+import numpy as np
+import torch
+import torch.nn as nn
+
+# Initialize Pygame
+pygame.init()
+
+# Colors
+WHITE = (255, 255, 255)
+JAM = (103, 3, 47)
+RED = (255, 0, 0)
+
+# Set up the game window
+width, height = 640, 480
+window = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Snake Game by PKKY")
+
+# Initialize score
+score = 0
+
+def init_game():
+    snake_pos = [[100, 50], [90, 50], [80, 50]]  # Starting positions
+    snake_direction = 'RIGHT'
+    food_pos = [random.randint(0, (width - 10) // 10) * 10, 
+                random.randint(0, (height - 10) // 10) * 10]
+    return snake_pos, snake_direction, food_pos
+
+snake_pos, snake_direction, food_pos = init_game()
+
+# Neural Network for Snake AI
+class SnakeAI(nn.Module):
+    def __init__(self):
+        super(SnakeAI, self).__init__()
+        # Define neural network layers
+        self.fc1 = nn.Linear(11, 256)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(256, 3)  # Output for each action
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        return x
+
+# Snake AI instance
+snake_ai = SnakeAI()
+
+# Movement functions
+def move_snake(direction, snake_pos):
+    if direction == 'RIGHT':
+        snake_pos = [[snake_pos[0][0] + 10, snake_pos[0][1]]] + snake_pos[:-1]
+    elif direction == 'LEFT':
+        snake_pos = [[snake_pos[0][0] - 10, snake_pos[0][1]]] + snake_pos[:-1]
+    elif direction == 'UP':
+        snake_pos = [[snake_pos[0][0], snake_pos[0][1] - 10]] + snake_pos[:-1]
+    elif direction == 'DOWN':
+        snake_pos = [[snake_pos[0][0], snake_pos[0][1] + 10]] + snake_pos[:-1]
+    return snake_pos
+
+def draw_grid():
+    for x in range(0, width, 10):  # Change 10 to your grid size if different
+        pygame.draw.line(window, WHITE, (x, 0), (x, height))
+    for y in range(0, height, 10):
+        pygame.draw.line(window, WHITE, (0, y), (width, y))
+
+def draw_snake(window, snake_pos):
+    for pos in snake_pos:
+        pygame.draw.rect(window, WHITE, pygame.Rect(pos[0], pos[1], 10, 10))  # Snake color changed to white
+
+def draw_food(window, food_pos):
+    pygame.draw.rect(window, RED, pygame.Rect(food_pos[0], food_pos[1], 10, 10))
+
+def check_collision(snake_pos):
+    # Check if the head of the snake collides with its body
+    if snake_pos[0] in snake_pos[1:]:
+        return True
+    # Check if the snake hits the boundaries of the window
+    if snake_pos[0][0] >= width or snake_pos[0][0] < 0 or snake_pos[0][1] >= height or snake_pos[0][1] < 0:
+        return True
+    return False
+
+def check_food_collision(snake_pos, food_pos):
+    if snake_pos[0] == food_pos:
+        return True
+    return False
+
+def is_safe_move(new_head_pos, snake_pos):
+    # Check if new position is within game boundaries and not in snake body
+    within_boundaries = 0 <= new_head_pos[0] < width and 0 <= new_head_pos[1] < height
+    return within_boundaries and new_head_pos not in snake_pos
+
+def target_food(snake_pos, food_pos):
+    head_x, head_y = snake_pos[0]
+    food_x, food_y = food_pos
+    safe_directions = []
+
+    # Identify all safe directions
+    if is_safe_move([head_x + 10, head_y], snake_pos):
+        safe_directions.append('RIGHT')
+    if is_safe_move([head_x - 10, head_y], snake_pos):
+        safe_directions.append('LEFT')
+    if is_safe_move([head_x, head_y - 10], snake_pos):
+        safe_directions.append('UP')
+    if is_safe_move([head_x, head_y + 10], snake_pos):
+        safe_directions.append('DOWN')
+
+    # Prioritize direction towards food, but only if it's safe
+    if 'RIGHT' in safe_directions and head_x < food_x:
+        return 'RIGHT'
+    if 'LEFT' in safe_directions and head_x > food_x:
+        return 'LEFT'
+    if 'UP' in safe_directions and head_y > food_y:
+        return 'UP'
+    if 'DOWN' in safe_directions and head_y < food_y:
+        return 'DOWN'
+
+    # Fallback to any safe move
+    return safe_directions[0] if safe_directions else 'RIGHT'
+
+def reset_game():
+    global snake_pos, snake_direction, food_pos, score
+    snake_pos, snake_direction, food_pos = init_game()
+    score = 0  # Reset the score
+
+# Draw score on screen
+def draw_score(window, score):
+    font = pygame.font.SysFont(None, 35)
+    score_text = font.render('Score: ' + str(score), True, WHITE)
+    window.blit(score_text, (0, 0))
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    # AI decision to target the food
+    snake_direction = target_food(snake_pos, food_pos)
+
+    snake_pos = move_snake(snake_direction, snake_pos)
+
+    if check_collision(snake_pos):
+        reset_game()  # Reset the game
+
+    if check_food_collision(snake_pos, food_pos):
+        food_pos = [random.randint(0, (width - 10) // 10) * 10, 
+                    random.randint(0, (height - 10) // 10) * 10]
+        snake_pos.append(snake_pos[-1])  # Grow the snake
+        score += 1  # Increase score
+
+    # Drawing
+    window.fill(JAM)
+    draw_grid()
+    draw_snake(window, snake_pos)
+    draw_food(window, food_pos)
+    draw_score(window, score)
+    pygame.display.update()
+
+    pygame.time.delay(10)

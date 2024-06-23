@@ -4,11 +4,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentSectionIndex = 0;
     let isScrolling = false;
 
-    // Function to scroll to a specific section
     function scrollToSection(index) {
         if (index >= 0 && index < sections.length) {
             const headerHeight = document.querySelector('header').offsetHeight;
-            // Additional offset of 20px before the start of the section's text
             const additionalOffset = -100;
             const sectionTop = sections[index].offsetTop - headerHeight - additionalOffset;
     
@@ -22,9 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => { isScrolling = false; }, 500); // Adjust delay as needed
         }
     }
-    
 
-    // Update currentSectionIndex and scroll to section on nav link click
     navLinks.forEach((link, index) => {
         link.addEventListener('click', function (e) {
             e.preventDefault();
@@ -33,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Highlight active section in navigation
     function highlightActiveSection() {
         let scrollPosition = document.documentElement.scrollTop || document.body.scrollTop;
         sections.forEach((section, index) => {
@@ -51,16 +46,64 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.addEventListener('scroll', highlightActiveSection);
 
-    // Handle wheel event for smooth section navigation
     window.addEventListener('wheel', function (e) {
+        const projectContent = document.querySelector('.project-content:not(.hidden)');
         if (isScrolling) return;
 
+        if (projectContent && projectContent.contains(e.target)) {
+            return;
+        }
+
         if (e.deltaY > 0 && currentSectionIndex < sections.length - 1) {
-            // Scrolling down
             scrollToSection(currentSectionIndex + 1);
         } else if (e.deltaY < 0 && currentSectionIndex > 0) {
-            // Scrolling up
             scrollToSection(currentSectionIndex - 1);
+        }
+    });
+
+    const projectLinks = document.querySelectorAll('.project-link');
+    
+    projectLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const projectContent = this.nextElementSibling;
+            const projectCode = projectContent.querySelector('.project-code');
+            const file = this.getAttribute('data-file');
+            const icon = this.querySelector('i');
+
+            document.querySelectorAll('.project-content').forEach(content => {
+                if (content !== projectContent) {
+                    content.classList.add('hidden');
+                    content.previousElementSibling.querySelector('i').classList.remove('rotate-up');
+                    content.previousElementSibling.querySelector('i').classList.add('rotate-down');
+                }
+            });
+
+            if (projectContent.classList.contains('hidden')) {
+                fetch(file)
+                    .then(response => response.text())
+                    .then(text => {
+                        projectCode.textContent = text;
+                        projectContent.classList.remove('hidden');
+                        projectContent.scrollTop = 0; // Reset scroll position to top
+                        icon.classList.remove('rotate-down');
+                        icon.classList.add('rotate-up');
+                    });
+            } else {
+                projectContent.classList.add('hidden');
+                icon.classList.remove('rotate-up');
+                icon.classList.add('rotate-down');
+            }
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!e.target.classList.contains('project-link') && !e.target.closest('.project-content')) {
+            document.querySelectorAll('.project-content').forEach(content => {
+                content.classList.add('hidden');
+                content.previousElementSibling.querySelector('i').classList.remove('rotate-up');
+                content.previousElementSibling.querySelector('i').classList.add('rotate-down');
+            });
         }
     });
 });

@@ -1,0 +1,358 @@
+import pygame
+import sys
+import random
+import pyodbc
+    
+# Initialize pygame
+pygame.init()
+
+# Constants
+WIDTH, HEIGHT = 640, 480
+BLOCK_SIZE = 20
+INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT = 300, 40
+
+# Colors
+WHITE = (255, 255, 255)
+JAM = (103, 3, 47)
+RED = (255, 0, 0)
+GREEN = (0, 128, 0)
+PURPLE = (128, 0, 128)
+
+# Fonts
+font = pygame.font.SysFont(None, 36)
+button_font = pygame.font.SysFont(None, 24)
+
+# Screen and Clock
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Snake Game by PKKY')
+clock = pygame.time.Clock()
+
+def connect_to_db():
+    conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
+                              'SERVER=DESKTOP-4948HO8;'  
+                              'DATABASE=SnakeGame;'
+                              'UID=Pawel2;'
+                              'PWD=1234;')
+    return conn
+
+def insert_score(nickname, score):
+    try:
+        connection = connect_to_db()
+        cursor = connection.cursor()
+
+        # Check if the nickname already exists in the table
+        select_query = "SELECT score FROM scores WHERE nickname = ?"
+        cursor.execute(select_query, (nickname,))
+        result = cursor.fetchone()
+        
+        if result:
+            # If nickname exists and new score is better, update it
+            if score > result[0]:
+                update_query = "UPDATE scores SET score = ? WHERE nickname = ?"
+                cursor.execute(update_query, (score, nickname))
+        else:
+            # If nickname doesn't exist, insert a new record
+            insert_query = "INSERT INTO scores (nickname, score) VALUES (?, ?)"
+            cursor.execute(insert_query, (nickname, score))
+        
+        connection.commit()
+
+    except pyodbc.Error as error:
+        print("Failed to insert/update record into table: {}".format(error))
+    finally:
+        cursor.close()
+        connection.close()
+
+def get_scores():
+    conn = connect_to_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT nickname, score FROM scores ORDER BY score DESC")
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return rows
+# Score dictionary
+scores = {}
+
+class Snake:
+    def __init__(self):
+        self.elements = [[int(WIDTH / 2), int(HEIGHT / 2)]]
+        self.directions = ['UP']
+        self.score = 0
+
+    def draw(self):
+        for element in self.elements:
+            pygame.draw.rect(screen, WHITE, (element[0], element[1], BLOCK_SIZE, BLOCK_SIZE))
+
+    def move(self):
+        cur = self.elements[0].copy()
+        direction = self.directions[0]
+
+        if direction == 'UP':
+            cur[1] -= BLOCK_SIZE
+        if direction == 'DOWN':
+            cur[1] += BLOCK_SIZE
+        if direction == 'LEFT':
+            cur[0] -= BLOCK_SIZE
+        if direction == 'RIGHT':
+            cur[0] += BLOCK_SIZE
+
+        self.elements = [cur] + self.elements[:-1]
+
+    def add_block(self):
+        self.elements.append(self.elements[-1].copy())
+        self.score += 1
+
+def input_name():
+    input_box = pygame.Rect(WIDTH // 2 - INPUT_BOX_WIDTH // 2, HEIGHT // 2 - INPUT_BOX_HEIGHT // 2, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT)
+    color_inactive = pygame.Color('lightskyblue3')
+    color_active = pygame.Color('dodgerblue2')
+    color = color_inactive
+    active = False
+    text = ''
+    font = pygame.font.Font(None, 32)
+    warning_font = pygame.font.Font(None, 24)
+    clock = pygame.time.Clock()
+    max_length = 15
+    empty_input = False  # To check for empty input
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if input_box.collidepoint(event.pos):
+                    active = not active
+                else:
+                    active = False
+                color = color_active if active else color_inactive
+            if event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_RETURN:
+                        if not text:  # If the input box is empty
+                            empty_input = True
+                        else:
+                            return text
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        if len(text) < max_length:
+                            text += event.unicode
+                            empty_input = False
+                if event.key == pygame.K_ESCAPE:
+                    return main_menu()
+
+        screen.fill(JAM)
+        
+        label = font.render("Your nick: ", True, WHITE)
+        screen.blit(label, (WIDTH // 2 - label.get_width() // 2, HEIGHT // 2 - 65))
+        
+        txt_surface = font.render(text, True, color)
+        width = max(INPUT_BOX_WIDTH, txt_surface.get_width()+10)
+        input_box.w = width
+        screen.blit(txt_surface, (input_box.x+5, input_box.y+5))
+        pygame.draw.rect(screen, color, input_box, 2)
+
+        # Display warning if the input is empty
+        if empty_input:
+            warning_message = warning_font.render("The input box can't be empty", True, RED)
+            screen.blit(warning_message, (WIDTH // 2 - warning_message.get_width() // 2, input_box.bottom + 10))
+
+        pygame.display.flip()
+        clock.tick(30)
+
+def show_scoreboard():
+    # Fetch scores from the database
+    fetched_scores = get_scores()
+
+    while True:
+        screen.fill(JAM)
+        y_offset = 50
+
+        title_text = font.render("Scoreboard", True, WHITE)
+        screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 10))
+
+        y_offset += 20
+        
+        # Loop through the scores fetched from the database
+        for name, score in fetched_scores:
+            score_text = font.render(f"{name}: {score}", True, WHITE)
+            screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, y_offset))
+            y_offset += 40
+
+        back_button = pygame.Rect(20, 20, 100, 40)
+        pygame.draw.rect(screen, WHITE, back_button)
+        back_text = button_font.render("Back", True, JAM)
+        screen.blit(back_text, (back_button.x + (back_button.width - back_text.get_width()) // 2,
+                                back_button.y + (back_button.height - back_text.get_height()) // 2))
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Check if "Back" button is clicked
+                if back_button.collidepoint(event.pos):
+                    return
+
+        pygame.display.update()
+        clock.tick(60)
+
+class Food:
+    def __init__(self):
+        self.position = [random.randint(0, (WIDTH // BLOCK_SIZE - 1)) * BLOCK_SIZE,
+                         random.randint(0, (HEIGHT // BLOCK_SIZE - 1)) * BLOCK_SIZE]
+        self.is_food_on_screen = True
+
+    def draw(self):
+        pygame.draw.rect(screen, RED, (self.position[0], self.position[1], BLOCK_SIZE, BLOCK_SIZE))
+
+def draw_grid():
+    for x in range(0, WIDTH, BLOCK_SIZE):
+        pygame.draw.line(screen, WHITE, (x, 0), (x, HEIGHT))
+    for y in range(0, HEIGHT, BLOCK_SIZE):
+        pygame.draw.line(screen, WHITE, (0, y), (WIDTH, y))
+
+def check_collision(elements, x, y):
+    for element in elements:
+        if element[0] == x and element[1] == y:
+            return True
+    return False
+
+def game_loop(player_name):
+    snake = Snake()
+    food = Food()
+
+    direction = 'UP'
+    change_to = direction
+
+    while True:
+        screen.fill(JAM)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            # Whenever a key is pressed down
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP and not direction == 'DOWN':
+                    change_to = 'UP'
+                if event.key == pygame.K_DOWN and not direction == 'UP':
+                    change_to = 'DOWN'
+                if event.key == pygame.K_LEFT and not direction == 'RIGHT':
+                    change_to = 'LEFT'
+                if event.key == pygame.K_RIGHT and not direction == 'LEFT':
+                    change_to = 'RIGHT'
+                if event.key == pygame.K_r:
+                    return True
+
+        # Update direction 
+        direction = change_to
+        
+        snake.directions.insert(0, direction)
+
+        if len(snake.directions) > snake.score + 1:
+            snake.directions.pop()
+
+        if food.is_food_on_screen is False:
+            food.position = [random.randint(0, (WIDTH // BLOCK_SIZE - 1)) * BLOCK_SIZE,
+                             random.randint(0, (HEIGHT // BLOCK_SIZE - 1)) * BLOCK_SIZE]
+            food.is_food_on_screen = True
+        snake.move()
+
+        # Snake collision with itself
+        if snake.elements[0] in snake.elements[1:]:
+            while True:
+                screen.fill(JAM)
+                lost_message = font.render(f"You lost, {player_name}: {snake.score}", True, WHITE)
+                message_rect = lost_message.get_rect(center=(WIDTH / 2, HEIGHT / 2))
+                screen.blit(lost_message, message_rect.topleft)
+        
+                restart_message = font.render("Press R to restart or ESC to return to main menu", True, WHITE)
+                restart_rect = restart_message.get_rect(center=(WIDTH / 2, HEIGHT / 2 + 40))
+                screen.blit(restart_message, restart_rect.topleft)
+        
+                pygame.display.flip()
+        
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_r:
+                            return game_loop(player_name)
+                        if event.key == pygame.K_ESCAPE:
+                            return snake.score  # Return score and go back to the main menu
+
+        # Food and Snake collision
+        if check_collision(snake.elements, food.position[0], food.position[1]):
+            snake.add_block()
+            food.is_food_on_screen = False
+
+        # Wrap snake if it hits the wall
+        if snake.elements[0][0] < 0:
+            snake.elements[0][0] = WIDTH - BLOCK_SIZE
+        if snake.elements[0][0] >= WIDTH:
+            snake.elements[0][0] = 0
+        if snake.elements[0][1] < 0:
+            snake.elements[0][1] = HEIGHT - BLOCK_SIZE
+        if snake.elements[0][1] >= HEIGHT:
+            snake.elements[0][1] = 0
+
+        snake.draw()
+        food.draw()
+        draw_grid()
+
+        screen.blit(font.render(f"Score: {snake.score}", True, WHITE), (10, 10))
+
+        pygame.display.flip()
+        clock.tick(10)
+    return False
+
+def main_menu():
+    while True:
+        screen.fill(JAM)
+        draw_button("Start Game", WIDTH // 2 - 100, HEIGHT // 2 - 40, 200, 40)
+        draw_button("Scoreboard", WIDTH // 2 - 100, HEIGHT // 2 + 10, 200, 40)
+        draw_button("Quit", WIDTH // 2 - 100, HEIGHT // 2 + 60, 200, 40)
+
+        mx, my = pygame.mouse.get_pos()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if WIDTH // 2 - 100 <= mx <= WIDTH // 2 + 100 and HEIGHT // 2 - 40 <= my <= HEIGHT // 2:
+                    player_name = input_name()
+                    score = game_loop(player_name)
+                    if player_name not in scores or score > scores[player_name]:
+                        scores[player_name] = score
+                    insert_score(player_name, score)  # Save the scores after updating
+
+                if WIDTH // 2 - 100 <= mx <= WIDTH // 2 + 100 and HEIGHT // 2 + 10 <= my <= HEIGHT // 2 + 50:
+                    show_scoreboard()
+                if WIDTH // 2 - 100 <= mx <= WIDTH // 2 + 100 and HEIGHT // 2 + 60 <= my <= HEIGHT // 2 + 100:
+                    pygame.quit()
+                    sys.exit()
+
+        label = font.render("SNAKE GAME by PKKY", True, WHITE)
+        screen.blit(label, (WIDTH // 2 - label.get_width() // 2, HEIGHT // 2 - 150))
+        pygame.display.update()
+        clock.tick(60)
+
+def draw_button(message, x, y, w, h):
+    pygame.draw.rect(screen, WHITE, (x, y, w, h))
+    pygame.draw.rect(screen, JAM, (x + 2, y + 2, w - 4, h - 4))
+    text = button_font.render(message, True, WHITE)
+    screen.blit(text, (x + (w - text.get_width()) // 2, y + (h - text.get_height()) // 2))
+
+main_menu()

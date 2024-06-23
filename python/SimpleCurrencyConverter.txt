@@ -1,0 +1,94 @@
+import tkinter as tk
+from tkinter import ttk
+import requests
+from bs4 import BeautifulSoup
+
+URL = "https://www.x-rates.com/table/?from=USD&amount=1"
+response = requests.get(URL)
+soup = BeautifulSoup(response.content, 'html.parser')
+
+table = soup.find('table', class_='tablesorter ratesTable')
+conversion_rates = {}
+
+rows = table.find_all('tr')
+for row in rows[1:]: 
+    columns = row.find_all('td')
+    currency_name = columns[0].text.strip()
+    conversion_rate = float(columns[1].text.strip())
+    conversion_rates[currency_name] = conversion_rate
+
+# GUI
+def update_result(*args):
+    try:
+        from_currency = currency_1_var.get()
+        to_currency = currency_2_var.get()
+        amount = float(amount_var.get())
+
+        converted_value = amount * conversion_rates[to_currency] / conversion_rates[from_currency]
+        result_label.config(text=f"{amount} {from_currency} = {converted_value:.4f} {to_currency}")
+    except ValueError:
+        pass
+
+def reverse_currencies():
+    from_currency = currency_1_var.get()
+    to_currency = currency_2_var.get()
+
+    currency_1_var.set(to_currency)
+    currency_2_var.set(from_currency)
+
+# App
+app = tk.Tk()
+app.title("Simple Currency Converter")
+
+screen_width = app.winfo_screenwidth()
+screen_height = app.winfo_screenheight()
+
+x = (screen_width / 2) - (500 / 2)
+y = (screen_height / 2) - (300 / 2)
+app.geometry('500x300+%d+%d' % (x, y))
+
+app.resizable(False, False)
+
+# List of currencies
+currencies = list(conversion_rates.keys())
+
+# Convert from
+currency_1_label = tk.Label(app, text="Convert from:")
+currency_1_label.pack(padx=10, pady=5)
+
+currency_1_var = tk.StringVar()
+currency_1_dropdown = ttk.Combobox(app, textvariable=currency_1_var, values=currencies, state='readonly')
+currency_1_dropdown.pack(padx=10, pady=5)
+currency_1_dropdown.current(0)
+
+# Convert to
+currency_2_label = tk.Label(app, text="Convert to:")
+currency_2_label.pack(padx=10, pady=5)
+currency_2_var = tk.StringVar()
+currency_2_dropdown = ttk.Combobox(app, textvariable=currency_2_var, values=currencies, state='readonly')
+currency_2_dropdown.pack(padx=10, pady=5)
+currency_2_dropdown.current(1)
+
+# Amount input
+amount_label = tk.Label(app, text="Amount:")
+amount_label.pack(padx=10, pady=5)
+amount_var = tk.StringVar(value="1")
+amount_entry = tk.Entry(app, textvariable=amount_var)
+amount_entry.pack(padx=10, pady=5)
+
+# Reverse button
+reverse_button = tk.Button(app, text="Reverse", command=reverse_currencies)
+reverse_button.pack(padx=10, pady=5)
+
+# Result display
+result_label = tk.Label(app, text="")
+result_label.pack(padx=10, pady=20)
+
+currency_1_var.trace_add("write", update_result)
+currency_2_var.trace_add("write", update_result)
+amount_var.trace_add("write", update_result)
+
+# Initialize the result
+update_result()
+
+app.mainloop()

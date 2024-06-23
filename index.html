@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>pkky.github.io</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paweł Kurantowicz Portfolio</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
 <body>
@@ -17,7 +19,6 @@
                 <li><a href="#projects">Projects</a></li>
                 <li><a href="#contact">Contact</a></li>
                 <li><a href="#map">Map</a></li>
-                <li><a href="#unity">Unity</a></li>
             </ul>
         </nav>
     </header>
@@ -29,21 +30,109 @@
 
     <section id="about">
         <h2>About Me</h2>
-        <p>Pufpuf.</p>
+        <p>As a highly skilled IT Specialist with a solid background in Level 1 and Level 2 support, I possess extensive experience in troubleshooting, software installation, hardware maintenance, user account management, and network support. My proficiency spans multiple operating systems, including Windows, Linux, and Mac, and I have a strong command of various scripting languages and tools, such as PowerShell, Bash, Git, and SQL. With a degree in Data Engineering and a passion for Python development, I am adept at database management, data analysis, and automation. My ability to manage and optimize IT systems while providing exceptional user support has consistently contributed to operational efficiency and enhanced user satisfaction.</p>
     </section>
 
     <section id="projects">
         <h2>My Projects</h2>
-        <p>Projektyxxxxxxxxx</p>
+        <p>Python:</p>
+        <ul id="project-list">
+            <li>
+                <a href="#" class="project-link" data-file="python/TicTacToe.txt">
+                    Tic Tac Toe <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="project-link" data-file="python/TicTacToeWithComputer.txt">
+                    Tic Tac Toe With Computer <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="project-link" data-file="python/Calculator.txt">
+                    Calculator <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="project-link" data-file="python/ModelsofEpidemiology.txt">
+                    Models of Epidemiology <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="project-link" data-file="python/MonsterHunterNowBestArmorAndWeapon.txt">
+                    Monster Hunter Now Best Armor And Weapon <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="project-link" data-file="python/SimpleCurrencyConverter.txt">
+                    Simple Currency Converter <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="project-link" data-file="python/WoodGathering.txt">
+                    Wood Gathering <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="project-link" data-file="python/SnakeGameWithDatabase.txt">
+                    Snake Game With Database <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+            <li>
+                <a href="#" class="project-link" data-file="python/SnakeGameWithHeuristic.txt">
+                    Snake Game With Heuristic <i class="fas fa-chevron-down"></i>
+                </a>
+                <div class="project-content hidden">
+                    <pre class="project-code"></pre>
+                </div>
+            </li>
+        </ul>
     </section>
 
     <section id="contact">
         <h2>Contact Me</h2>
-        <p>Pifpif</p>
-    </section>
+        <p>
+            <a href="mailto:pawkurantowicz@gmail.com">
+                <i class="fas fa-envelope"></i> pawkurantowicz@gmail.com
+            </a>
+        </p>
+        <p>
+            <a href="tel:+48604168735">
+                <i class="fas fa-phone"></i> +48604168735
+            </a>
+        </p>
+        <p>
+            <a href="https://www.linkedin.com/in/pkky/" target="_blank">
+                <i class="fab fa-linkedin"></i> LinkedIn Profile
+            </a>
+        </p>
+    </section>   
 
     <section id="map">
-        <div class="">
+        <div id="map-controls">
             <select class="form-control" id="citySelector" onchange="showCity()">
                 <option value="" selected>Wybierz miasto</option>
                 <option value="Warsaw">Warszawa</option>
@@ -65,15 +154,26 @@
                 <option value="Poznan">Poznań</option>
                 <option value="Szczecin">Szczecin</option>
             </select>
-            <input type="text" id="addressInput" placeholder="Podaj adres" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
+            <input type="text" id="addressInput" placeholder="Podaj ulicę" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
             <span id="darkModeToggle">🌜</span>
+            <div class="dropdown">
+                <button onclick="toggleDropdown()" class="dropbtn">Wybierz sklepy</button>
+                <div id="shopToggleContainer" class="dropdown-content">
+                    <label><input type="checkbox" class="shopToggle" value="biedronka" checked> Biedronka</label>
+                    <label><input type="checkbox" class="shopToggle" value="lidl" checked> Lidl</label>
+                    <label><input type="checkbox" class="shopToggle" value="carrefour" checked> Carrefour</label>
+                    <label><input type="checkbox" class="shopToggle" value="auchan" checked> Auchan</label>
+                    <label><input type="checkbox" class="shopToggle" value="rossmann" checked> Rossmann</label>
+                    <label><input type="checkbox" class="shopToggle" value="kaufland" checked> Kaufland</label>
+                    <label><input type="checkbox" class="shopToggle" value="dealz" checked> Dealz</label>
+                </div>
+            </div>
+        </div>
+        <div id="radiusSliderContainer">
+            <label for="radiusSlider">Zakres sklepów: <span id="radiusValue">1500</span> metrów</label>
+            <input type="range" id="radiusSlider" min="100" max="15000" step="100" value="1500" oninput="updateSearchRadius(this.value)">
         </div>
         <div id="mapContainer"></div>
-    </section>
-
-    <section id="unity">
-        <h2>Unity</h2>
-        <p>Pifpif</p>
     </section>
 
     <script src="map.js"></script>

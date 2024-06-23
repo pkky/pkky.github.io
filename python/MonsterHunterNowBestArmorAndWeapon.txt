@@ -1,0 +1,377 @@
+import tkinter as tk
+import random
+from tkinter import ttk
+from collections import defaultdict
+
+# Initialize weapons, armors, and monster stats
+weapon_categories = {
+    'Sword & Shield': {
+        'Hunter\'s Knife': {'Poison Resistance': 1, 'Element': None}, 
+        'Jagras Edge': {'Health Boost': 1, 'Element': 'Water'}, 
+        'Blooming Knife': {'Sneak Attack': 1, 'Element': 'Poison'},
+        'Carapace Edge': {'Defense Boost': 1, 'Element': None},
+        'Girros Knife': {'Sneak Attack': 1, 'Element': 'Paralysis'},
+        'Thunder Edge': {'Evade Extender': 1, 'Element': 'Thunder'},
+        'Lumu Knife': {'Divine Blessing': 1, 'Element': None},
+        'Aqua Messer': {'Last Stand': 1, 'Element': 'Water'},
+        'Blazing Edge': {'Rising Tide': 1, 'Element': 'Fire'},
+        'Princess Rapier': {'Health Boost': 1, 'Element': 'Poison'},
+        'Glacial Grace': {'Divine Blessing': 1, 'Element': 'Ice'}
+        },
+    'Great Sword': {
+        'Buster Sword': {'Poison Resistance': 1, 'Element': None}, 
+        'Jagras Blade': {'Health Boost': 1, 'Element': 'Water'}, 
+        'Blooming Blade': {'Sneak Attack': 1, 'Element': 'Poison'},
+        'Carapace Buster': {'Defense Boost': 1, 'Element': None},
+        'Girros Blade': {'Sneak Attack': 1, 'Element': 'Paralysis'},
+        'Thunder Blade': {'Evade Extender': 1, 'Element': 'Thunder'}
+        },
+    'Hammer': {
+        'Iron Hammer': {'Poison Resistance': 1, 'Element': None}, 
+        'Kulu Beak': {'Fortify': 1, 'Element': None}, 
+        'Blooming Hammer': {'Sneak Attack': 1, 'Element': 'Poison'},
+        'Carapace Sledge': {'Defense Boost': 1, 'Element': None},
+        'Girros Hammer': {'Sneak Attack': 1, 'Element': 'Paralysis'},
+        'Thunder Hammer': {'Evade Extender': 1, 'Element': 'Thunder'}
+        },
+    'Long Sword': {
+        'Iron Katana': {'Poison Resistance': 1, 'Element': None},
+        'First Dance': {'Fortify': 1, 'Element': None},
+        'Pulsar Shotel': {'Evade Extender': 1, 'Element': 'Thunder'}
+    },
+    'Light Bowgun': {
+        'Chain Blitz': {'Poison Resistance': 1, 'Element': None},
+        'Jagras Blitz': {'Health Boost': 1, 'Element': 'Water'},
+        'Carapace Rifle': {'Defense Boost': 1, 'Element': None},
+        'Thunder Blitz': {'Evade Extender': 1, 'Element': 'Thunder'},
+        'Lumu Blitz': {'Divine Blessing': 1, 'Element': None}
+    },
+    'Bow': {
+        'Iron Bow': {'Poison Resistance': 1, 'Element': None},
+        'Kulu Arrow': {'Fortify': 1, 'Element': None},
+        'Blooming Arch': {'Sneak Attack': 1, 'Element': 'Poison'},
+        'Pulsar Bow': {'Evade Extender': 1, 'Element': 'Thunder'}
+    }
+}
+
+armor_sets = {
+    'Leather Set': [
+        {'Leather Headgear': {'Critical Eye': 1, 'Ice Resistance': 1}},
+        {'Leather Mail': {'Attack Boost': 1, 'Fire Resistance': 1}},
+        {'Leather Gloves': {'Defense Boost': 1, 'Thunder Resistance': 1}},
+        {'Leather Belt': {'Health Boost': 1, 'Water Resistance': 1}},
+        {'Leather Trousers': {'Poison Resistance': 1, 'Paralysis Resistance': 1}}
+    ],
+    'Jagras Set': [
+        {'Jagras Helm': {'Firm Foothold': 1}},
+        {'Jagras Mail': {'Rising Tide': 1}},
+        {'Jagras Vambraces': {'Firm Foothold': 1, 'Water': 1}},
+        {'Jagras Coil': {'Fortify': 1, 'Rising Tide': 1}},
+        {'Jagras Greaves': {'Water': 1}}
+    ],
+    'Kulu Set': [
+        {'Kulu Headpiece': {'Lock On': 1, 'Critical Eye': 1}},
+        {'Kulu Mail': {'Guts': 1}},
+        {'Kulu Vambraces': {'Last Stand': 1, 'Critical Eye': 1}},
+        {'Kulu Coil': {'Last Stand': 1, 'Evade Extender': 1}},
+        {'Kulu Greaves': {'Critical Eye': 1}}
+    ],
+    'Pukei Set': [
+        {'Pukei Hood': {'Focus': 1, 'Health Boost': 1}},
+        {'Pukei Mail': {'Poison Resistance': 1, 'Focus': 1}},
+        {'Pukei Vambraces': {'Poison Attack': 1, 'Poison Resistance': 1}},
+        {'Pukei Coil': {'Poison Attack': 1}},
+        {'Pukei Greaves': {'Health Boost': 1, 'Poison Resistance': 1}}
+    ],
+    'Barroth Set': [
+        {'Barroth Helm': {'Defense Boost': 1, 'Offensive Guard': 1}},
+        {'Barroth Mail': {'Offensive Guard': 1}},
+        {'Barroth Vambraces': {'Guard': 1}},
+        {'Barroth Coil': {'Defense Boost': 1, 'Guard': 1}},
+        {'Barroth Greavse': {'Recoil Down': 1, 'Defense Boost': 1}}
+    ],
+    'Girros Set': [
+        {'Girros Mask': {'Paralysis Resistance': 1}},
+        {'Girros Mail': {'Paralysis Resistance': 1, 'Sneak Attack': 1}},
+        {'Girros Vambraces': {'Sneak Attack': 1, 'Earplugs': 1}},
+        {'Girros Coil': {'Paralysis Attack': 1, 'Earplugs': 1}},
+        {'Girros Greaves': {'Paralysis Attack': 1}}
+    ],
+    'Kadachi Set': [
+        {'Kadachi Helm': {'Reload Speed': 1, 'Artful Dodge': 1}},
+        {'Kadachi Mail': {'Evade Extender': 1, 'Thunder Attack': 1}},
+        {'Kadachi Vambraces': {'Evade Extender': 1, 'Artful Dodger': 1}},
+        {'Kadachi Coil': {'Thunder Attack': 1}},
+        {'Kadachi Greaves': {'Artful Dodger': 1, 'Thunder Resistance': 1}}
+    ],
+    'Paolumu Set': [
+        {'Lumu Hat': {'Concentration': 1, 'Windproof': 1}},
+        {'Lumu Mail': {'Recoil Down': 1}},
+        {'Lumu Vambraces': {'Concentration': 1, 'Divine Blessing': 1}},
+        {'Lumu Coil': {'Divine Blessing': 1}},
+        {'Lumu Greaves': {'Windproof': 1}}
+    ],
+    'Jyuratodus Set': [
+        {'Jyura Helm': {'Water Resistance': 1, 'Last Stand': 1}},
+        {'Jyura Mail': {'Water Attack': 1, 'Last Stand': 1}},
+        {'Jyura Vambraces': {'Water Attack': 1}},
+        {'Jyura Coil': {'Water Resistance': 1}},
+        {'Jyura Greaves': {'Focus': 1, 'Last Stand': 1}}
+    ],
+    'Anjanath Set': [
+        {'Anja Helm': {'Fire Attack': 2, 'Fire Resistance': 1}},
+        {'Anja Mail': {'Special Boost': 1}},
+        {'Anja Mail': {'Special Boost': 1}},
+        {'Anja Coil': {'Fire Resistance': 1, 'Special Boost': 1}},
+        {'Anja Greaves': {'Peak Perfomance': 1}}
+    ],
+    'Rathian Set': [
+        {'Rathian Helm': {'Health Boost': 2, 'Poison Attack': 1}},
+        {'Rathian Mail': {'Poison Attack': 1}},
+        {'Rathian Vambraces': {'Lock On': 1, 'Burst': 1}},
+        {'Rathian Coil': {'Poison Resistance': 1, 'Burst': 1}},
+        {'Rathian Greaves': {'Health Boost': 1}},
+    ],
+    'Legiana Set': [
+        {'Legiana Helm': {'Divine Blessing': 1, 'Ice Attack': 1}},
+        {'Legiana Mail': {'Divine Blessing': 2, 'Windproof': 1}},
+        {'Legiana Vambraces': {'Reload Speed': 1}},
+        {'Legiana Coil': {'Ice Attack': 2, 'Windproof': 1}},
+        {'Legiana Greaves': {'Reload Speed': 1, 'Ice Resistance': 1}}
+    ]
+}
+
+monsters = {
+    'Great Jagras': {
+        'Elemental Weakness': {'Fire': 1, 'Poison': 1},
+        'Element': {},
+    },
+    'Kulu-Ya-Ku': {
+        'Elemental Weakness': {'Water': 1},
+        'Element': {},
+    },
+    'Pukei-Pukei': {
+        'Elemental Weakness': {'Thunder': 1},
+        'Element': {'Poison': 1},
+    },
+    'Barroth': {
+        'Elemental Weakness': {'Fire': 1, 'Poison': 1},
+        'Element': {'Water': 1},
+    },
+    'Great Girros': {
+        'Elemental Weakness': {'Water': 1},
+        'Element': {'Paralysis': 1},
+    },
+    'Tobi-Kadachi': {
+        'Elemental Weakness': {'Water': 1, 'Poison': 1},
+        'Element': {'Thunder': 1},
+    },
+    'Paolumu': {
+        'Elemental Weakness': {'Fire': 1},
+        'Element': {},
+    },
+    'Jyuratodus': {
+        'Elemental Weakness': {'Thunder': 1},
+        'Element': {'Water': 1},
+    },
+    'Anjanath': {
+        'Elemental Weakness': {'Water': 1},
+        'Element': {'Fire': 1},
+    },
+    'Rathian': {
+        'Elemental Weakness': {'Thunder': 1, 'Dragon': 1},
+        'Element': {'Fire': 1, 'Posion': 1},
+    },
+    'Legiana': {
+        'Elemental Weakness': {'Fire': 1, 'Poison': 1},
+        'Element': {'Ice': 1},
+    }
+}      
+
+# Define the best skills for each weapon type
+best_skills_for_weapon = {
+    'Sword & Shield': ['Critical Eye', 'Attack Boost', 'Fortify', 'Evade Extender', 'Health Boost'],
+    'Great Sword': ['Critical Eye', 'Attack Boost', 'Health Boost', 'Focus'],
+    'Bow': ['Critical Eye', 'Reload Speed', 'Artful Dodger', 'Attack Boost', 'Windproof', 'Health Boost'],
+    'Hammer': ['Critical Eye', 'Attack Boost', 'Health Boost', 'Focus'],
+    'Long Sword': ['Critical Eye', 'Attack Boost', 'Health Boost', 'Focus'],
+    'Light Bowgun': ['Critical Eye', 'Reload Speed', 'Artful Dodger', 'Attack Boost', 'Windproof', 'Health Boost']
+}  
+
+# Define the beneficial skills for each elemental weakness
+beneficial_skills_for_weakness = {
+    'Fire': 'Fire Attack',
+    'Water': 'Water Attack',
+    'Thunder': 'Thunder Attack',
+    'Poison': 'Poison Attack',
+    'Paralysis': 'Paralysis Attack',
+    'Ice': 'Ice Attack'
+}
+
+def recommend_equipment(monster_selected, weapon_type, weapon_categories, armor_sets, monsters, best_skills_for_weapon):
+    best_skills = best_skills_for_weapon.get(weapon_type, [])
+    monster_weaknesses = monsters.get(monster_selected, {}).get('Elemental Weakness', {})
+    
+    # Add elemental weakness to best_skills for this particular case
+    for element in monster_weaknesses.keys():
+        if element not in best_skills:
+            best_skills.append(element)
+    
+    # Identify beneficial skills based on selected weapon
+    weapon_skills = set()
+    for weapon, skills in weapon_categories[weapon_type].items():
+        weapon_skills.update(skills.keys())
+    
+    # Initialize recommendations
+    recommendations = {}
+    armor_parts = ['Helmet', 'Chest', 'Gloves', 'Belt', 'Legs']
+    
+    # Randomly choose one of the monster's weaknesses
+    chosen_weakness = random.choice(list(monster_weaknesses.keys()))
+    
+    # Randomly choose one of the monster's weaknesses to prioritize
+    if monster_weaknesses:
+        primary_weakness = random.choice(list(monster_weaknesses.keys()))
+    else:
+        primary_weakness = None
+    
+    # Loop through each armor part to find the best piece
+    for idx, part in enumerate(armor_parts):
+        best_piece = None
+        best_score = 0
+        
+        # First, look for armor pieces with attributes that match the monster's primary weakness, if any
+        if primary_weakness:
+            for armor_set_name, armor_set in armor_sets.items():
+                armor_piece = armor_set[idx]
+                for armor_name, skills in armor_piece.items():
+                    score = 0
+                    skill_for_weakness = f"{primary_weakness} Attack"
+                    score += skills.get(skill_for_weakness, 0)
+
+                    if score > best_score:
+                        best_score = score
+                        best_piece = f"{armor_set_name} - {armor_name}"
+                        
+        # Then, if no suitable armor piece is found, look for armor pieces that match the best skills for the weapon type
+        if best_score == 0:
+            for armor_set_name, armor_set in armor_sets.items():
+                armor_piece = armor_set[idx]
+                for armor_name, skills in armor_piece.items():
+                    score = sum(skills.get(skill, 0) for skill in best_skills)
+                    if score > best_score:
+                        best_score = score
+                        best_piece = f"{armor_set_name} - {armor_name}"
+                        
+        if best_piece is None:
+            default_armor = list(armor_sets['Leather Set'][idx].keys())[0]
+            best_piece = f"Leather Set - {default_armor}"
+            
+        recommendations[part] = best_piece
+    
+    # For weapon recommendation
+    best_weapon = None
+    best_weapon_score = 0
+    for weapon, attributes in weapon_categories[weapon_type].items():
+        weapon_score = 0
+        weapon_element = attributes.get('Element', None)
+        if weapon_element and weapon_element in monster_weaknesses:
+            weapon_score += monster_weaknesses[weapon_element]
+        
+        if weapon_score > best_weapon_score:
+            best_weapon = weapon
+            best_weapon_score = weapon_score
+    
+    # If no elemental advantage, recommend based on skills
+    if best_weapon is None:
+        for weapon, attributes in weapon_categories[weapon_type].items():
+            weapon_score = sum(attributes.get(skill, 0) for skill in weapon_skills if skill != "Element")
+            if weapon_score > best_weapon_score:
+                best_weapon = weapon
+                best_weapon_score = weapon_score
+        
+    recommendation_str = f"For fighting {monster_selected} with {weapon_type}, the recommended equipment is:\n"
+    recommendation_str += f"Best Weapon: {best_weapon}\n"
+    for part, armor_piece in recommendations.items():
+        recommendation_str += f"Best {part}: {armor_piece}\n"
+
+    return recommendation_str, recommendations, best_weapon
+
+# Function called when a monster is selected from the dropdown
+def monster_selected(event=None):
+    monster = monster_var.get()
+    weapon_type = weapon_type_var.get()
+    if monster != 'Select Monster':
+        recommendation_str, best_armor_set, best_weapon = recommend_equipment(
+            monster, weapon_type, weapon_categories, armor_sets, monsters, best_skills_for_weapon)
+        display_equipment(recommendation_str, best_armor_set, best_weapon, armor_sets)
+
+# Function to display the recommended equipment in the same window
+def display_equipment(recommendation_str, best_armor_by_slot, best_weapon, armor_sets):
+    recommendation_label.config(text=recommendation_str)
+    
+    # Display current skill levels
+    current_skills = defaultdict(int)
+    
+    # Skills from the weapon
+    for skill, level in weapon_categories[weapon_type_var.get()][best_weapon].items():
+        if skill != "Element":
+            current_skills[skill] += level
+            
+    # Skills from the armor pieces
+    for armor_piece in best_armor_by_slot.values():
+        if armor_piece and " - " in armor_piece:  # Check before split
+            set_name, piece_name = armor_piece.split(" - ")
+            if set_name in armor_sets:  # Check if set_name is valid
+                for armor in armor_sets[set_name]:
+                    if piece_name in armor:
+                        for skill, level in armor[piece_name].items():
+                            current_skills[skill] += level
+
+    # Sort the skills by level in descending order
+    sorted_skills = {k: v for k, v in sorted(current_skills.items(), key=lambda item: item[1], reverse=True)}
+
+    # Display the sorted skills
+    skills_str = "Current Skills:\n"
+    for skill, level in sorted_skills.items():
+        skills_str += f"{skill}: Level {level}\n"
+        
+    skills_label.config(text=skills_str)
+
+
+root = tk.Tk()
+root.title('Monster Hunter Equipment Recommender')
+root.geometry("400x600")
+
+# Create Tkinter Variables
+monster_var = tk.StringVar()
+monster_var.set("Select Monster")
+weapon_type_var = tk.StringVar()
+weapon_type_var.set("Any")
+
+# Create Monster Selection Dropdown
+monster_label = tk.Label(root, text="Select Monster:")
+monster_label.pack()
+monster_dropdown = ttk.Combobox(root, textvariable=monster_var)
+monster_dropdown["values"] = ["Select Monster"] + list(monsters.keys())
+monster_dropdown.pack()
+
+# Create Weapon Type Selection Dropdown
+weapon_type_label = tk.Label(root, text="Select Weapon Type:")
+weapon_type_label.pack()
+weapon_type_dropdown = ttk.Combobox(root, textvariable=weapon_type_var)
+weapon_type_dropdown["values"] = ["Any"] + list(weapon_categories.keys())
+weapon_type_dropdown.pack()
+
+# Create the button to execute the search
+search_button = tk.Button(root, text="Search Best Equipment", command=monster_selected)
+search_button.pack()
+
+# Create labels to display results
+recommendation_label = tk.Label(root, text="", wraplength=350)
+recommendation_label.pack()
+
+skills_label = tk.Label(root, text="", wraplength=350)
+skills_label.pack()
+
+root.mainloop()

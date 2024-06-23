@@ -7,8 +7,7 @@ var polandBounds = [
     [49.0, 14.1], // Southwest coordinates
     [55.0, 24.1]  // Northeast coordinates
 ];
-const searchRadius = 1500;
-var visibleShopsGlobal = [];
+let searchRadius = 1500; // Change to let to allow reassignment
 var visibleShopMarkers = [];
 
 // Mapping of city names to their coordinates
@@ -33,7 +32,6 @@ const cityCoordinates = {
     "Szczecin": [53.428543, 14.552812]
 };
 
-
 document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
     attachEventListeners();
@@ -43,7 +41,7 @@ function initializeMap() {
     // Set the initial view of the map
     const initialCoordinates = [52.0693, 19.4803]; // Coordinates for the center of Poland
     const initialZoomLevel = 6;
-    
+
     map = L.map('mapContainer', {
         maxBounds: polandBounds,
         maxBoundsViscosity: 1.0,
@@ -52,26 +50,37 @@ function initializeMap() {
 
     // Load Poland borders by default
     loadPolandBorders();
-    
+
     // Initialize shop layers without adding them to the map
     var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann", "Kaufland", "Dealz"]; // Add other shop types if necessary
     shopTypes.forEach(shopType => {
-        // Convert shopType to lowercase
-        shopLayers[shopType.toLowerCase()] = L.layerGroup().addTo(map); 
+        shopLayers[shopType.toLowerCase()] = L.layerGroup().addTo(map);
     });
 
     // Add the tile layer to the map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
-    
+
     map.on('zoomend', function() {
         if (map.getZoom() === 6) {
             resetMapView();
         }
     });
-    
+
     EU();
+}
+
+function updateSearchRadius(value) {
+    searchRadius = parseInt(value, 10);
+    document.getElementById('radiusValue').innerText = searchRadius;
+
+    // If there's a current green square marker, update the visible shops
+    if (currentGreenSquareMarker) {
+        const coords = currentGreenSquareMarker.getLatLng();
+        clearVisibleShops();
+        showShopsInRadius([coords.lat, coords.lng], searchRadius);
+    }
 }
 
 function resetMapView() {
@@ -104,7 +113,7 @@ function clearCityData() {
         geojsonLayer.remove();
         geojsonLayer = null;
     }
-    
+
     // Remove previous shop layers
     Object.keys(shopLayers).forEach(key => {
         if (shopLayers[key]) {
@@ -125,6 +134,16 @@ function attachEventListeners() {
         var city = document.getElementById('citySelector').value;
         geocodeAddress(address, city);
     });
+    document.querySelectorAll('.shopToggle').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            // If there's a current green square marker, update the visible shops
+            if (currentGreenSquareMarker) {
+                const coords = currentGreenSquareMarker.getLatLng();
+                clearVisibleShops();
+                showShopsInRadius([coords.lat, coords.lng], searchRadius);
+            }
+        });
+    });
 }
 
 function showCity() {
@@ -139,7 +158,7 @@ function showCity() {
         geojsonLayer.remove();
         geojsonLayer = null;
     }
-    
+
     // Remove previous shop layers and markers
     Object.keys(shopLayers).forEach(key => {
         if (shopLayers[key]) {
@@ -160,7 +179,7 @@ function showCity() {
         map.removeLayer(currentGreenSquareMarker);
         currentGreenSquareMarker = null;
     }
-    
+
     // Clear the address input
     document.getElementById('addressInput').value = '';
 
@@ -303,11 +322,13 @@ function showShopsInRadius(centerCoords, radius) {
     clearVisibleShops();
 
     Object.keys(shopLayers).forEach(shopTag => {
-        if (shopLayers[shopTag]) {
+        // Check if the shop layer is visible based on the toggle state
+        var checkbox = document.querySelector(`.shopToggle[value="${shopTag}"]`);
+        if (shopLayers[shopTag] && checkbox && checkbox.checked) {
             shopLayers[shopTag].eachLayer(function(layer) {
                 var shopCoords = layer.getLatLng();
                 var distance = map.distance(centerCoords, shopCoords);
-                
+
                 if (distance <= radius) {
                     // Check if the shop is already in the visibleShopsGlobal array to avoid duplicates
                     const isShopAlreadyVisible = visibleShopMarkers.some(marker => marker.getLatLng().equals(shopCoords));
@@ -339,22 +360,6 @@ function addGreenSquareMarker(lat, lng) {
 
     currentGreenSquareMarker = L.marker([lat, lng], { icon: greenIcon }).addTo(map);
 }
-
-function updateShopsDisplay() {
-    var checkboxes = document.querySelectorAll('#shopSelector input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            if (shopLayers[checkbox.value.toLowerCase()]) { // Use toLowerCase() to ensure consistency
-                shopLayers[checkbox.value.toLowerCase()].addTo(map);
-            }
-        } else {
-            if (shopLayers[checkbox.value.toLowerCase()]) {
-                map.removeLayer(shopLayers[checkbox.value.toLowerCase()]);
-            }
-        }
-    });
-}
-
 
 function toggleDarkMode() {
     var isDarkMode = document.body.classList.toggle('dark-mode');
@@ -426,4 +431,21 @@ function EU() {
             }).addTo(map);
         })
         .catch(error => console.error('Error loading the EU GeoJSON file:', error));
+}
+
+function toggleDropdown() {
+    document.getElementById("shopToggleContainer").classList.toggle("show");
+}
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
 }
