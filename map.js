@@ -1,16 +1,15 @@
 var map;
 var geojsonLayer;
 var city = null;
-var shopLayers = {}; // Object to hold layers for each type of shop
+var shopLayers = {};
 var currentGreenSquareMarker = null;
 var polandBounds = [
-    [49.0, 14.1], // Southwest coordinates
-    [55.0, 24.1]  // Northeast coordinates
+    [49.0, 14.1],
+    [55.0, 24.1]
 ];
-let searchRadius = 1500; // Change to let to allow reassignment
+let searchRadius = 1500;
 var visibleShopMarkers = [];
 
-// Mapping of city names to their coordinates
 const cityCoordinates = {
     "Warsaw": [52.229676, 21.012229],
     "Lodz": [51.759445, 19.457216],
@@ -38,26 +37,22 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeMap() {
-    // Set the initial view of the map
-    const initialCoordinates = [52.0693, 19.4803]; // Coordinates for the center of Poland
+    const initialCoordinates = [52.0693, 19.4803];
     const initialZoomLevel = 6;
 
     map = L.map('mapContainer', {
         maxBounds: polandBounds,
         maxBoundsViscosity: 1.0,
-        minZoom: 6, // Set minimum zoom level
+        minZoom: 6,
     }).setView(initialCoordinates, initialZoomLevel);
 
-    // Load Poland borders by default
     loadPolandBorders();
 
-    // Initialize shop layers without adding them to the map
-    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann", "Kaufland", "Dealz"]; // Add other shop types if necessary
+    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann", "Kaufland", "Dealz"];
     shopTypes.forEach(shopType => {
         shopLayers[shopType.toLowerCase()] = L.layerGroup().addTo(map);
     });
 
-    // Add the tile layer to the map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
@@ -75,7 +70,6 @@ function updateSearchRadius(value) {
     searchRadius = parseInt(value, 10);
     document.getElementById('radiusValue').innerText = searchRadius;
 
-    // If there's a current green square marker, update the visible shops
     if (currentGreenSquareMarker) {
         const coords = currentGreenSquareMarker.getLatLng();
         clearVisibleShops();
@@ -84,22 +78,17 @@ function updateSearchRadius(value) {
 }
 
 function resetMapView() {
-    // Reset city selection
     document.getElementById('citySelector').value = 'Wybierz miasto';
 
-    // Clear previous city data
     clearCityData();
 
-    // Remove the previous green square marker if it exists
     if (currentGreenSquareMarker) {
         map.removeLayer(currentGreenSquareMarker);
         currentGreenSquareMarker = null;
     }
 
-    // Set view for Poland, ensure the zoom level is set to 6
     map.setView([52.0693, 19.4803], 6);
 
-    // Set maximum zoom level to 7
     map.setZoom(6);
     map.options.minZoom = 6;
     map.options.maxZoom = 7;
@@ -108,13 +97,11 @@ function resetMapView() {
 }
 
 function clearCityData() {
-    // Clear previous city data
     if (geojsonLayer) {
         geojsonLayer.remove();
         geojsonLayer = null;
     }
 
-    // Remove previous shop layers
     Object.keys(shopLayers).forEach(key => {
         if (shopLayers[key]) {
             shopLayers[key].remove();
@@ -122,7 +109,6 @@ function clearCityData() {
         }
     });
 
-    // Clear the shopLayers object
     shopLayers = {};
 }
 
@@ -136,7 +122,6 @@ function attachEventListeners() {
     });
     document.querySelectorAll('.shopToggle').forEach(toggle => {
         toggle.addEventListener('change', function() {
-            // If there's a current green square marker, update the visible shops
             if (currentGreenSquareMarker) {
                 const coords = currentGreenSquareMarker.getLatLng();
                 clearVisibleShops();
@@ -149,50 +134,41 @@ function attachEventListeners() {
 function showCity() {
     let city = document.getElementById('citySelector').value;
 
-    // Clear previous city data, shops, and markers
     clearCityData();
     clearVisibleShops();
 
-    // Clear previous city data
     if (geojsonLayer) {
         geojsonLayer.remove();
         geojsonLayer = null;
     }
 
-    // Remove previous shop layers and markers
     Object.keys(shopLayers).forEach(key => {
         if (shopLayers[key]) {
-            shopLayers[key].clearLayers(); // Clear markers from the layer
-            shopLayers[key].remove(); // Remove layer from map
-            delete shopLayers[key]; // Delete the key from the shopLayers object
+            shopLayers[key].clearLayers();
+            shopLayers[key].remove();
+            delete shopLayers[key];
         }
     });
 
-    // Reinitialize shop layers without adding them to the map
-    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann", "Kaufland", "Dealz"]; // Add other shop types if necessary
+    var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann", "Kaufland", "Dealz"];
     shopTypes.forEach(shopType => {
-        shopLayers[shopType.toLowerCase()] = L.layerGroup(); // Don't add to map yet
+        shopLayers[shopType.toLowerCase()] = L.layerGroup();
     });
 
-    // Remove the previous green square marker if it exists
     if (currentGreenSquareMarker) {
         map.removeLayer(currentGreenSquareMarker);
         currentGreenSquareMarker = null;
     }
 
-    // Clear the address input
     document.getElementById('addressInput').value = '';
 
-    // Set view and load data based on selected city
     if (city && city !== 'Wybierz miasto') {
-        // Allow zooming up to level 19 for specific cities
         map.options.minZoom = 6;
         map.options.maxZoom = 19;
 
         map.setView(cityCoordinates[city], 13);
-        loadGeoJson(city); // Load city-specific data
+        loadGeoJson(city);
     } else {
-        // Set view for Poland and load borders if 'Wybierz miasto' is selected
         resetMapView();
     }
 }
@@ -209,7 +185,7 @@ function loadGeoJson(city) {
         .then(data => {
             geojsonLayer = L.geoJSON(data, {
                 pointToLayer: function(feature, latlng) {
-                    return L.layerGroup(); // Avoid creating default markers
+                    return L.layerGroup();
                 },
                 onEachFeature: onEachFeature
             }).addTo(map);
@@ -226,10 +202,9 @@ function onEachFeature(feature, layer) {
                 iconAnchor: [10, 10]
             });
 
-            var marker = L.marker([coord[0], coord[1]], {icon: customIcon}); // Leaflet expects [lat, lng]
+            var marker = L.marker([coord[0], coord[1]], {icon: customIcon});
             marker.bindPopup(function() {
                 if (currentGreenSquareMarker) {
-                    // Calculate distance from green square marker to the shop
                     var distance = calculateDistance(marker.getLatLng(), currentGreenSquareMarker.getLatLng());
                     return '<b>' + feature.properties.shopName + '</b><br>Distance: ' + distance + ' meters';
                 } else {
@@ -237,33 +212,29 @@ function onEachFeature(feature, layer) {
                 }
             });
 
-            var shopTag = feature.properties.tag.toLowerCase(); // Convert tag to lowercase
+            var shopTag = feature.properties.tag.toLowerCase();
 
-            // Check if the shopLayer for this tag exists
             if (!shopLayers[shopTag]) {
                 console.error("Shop layer not found for tag:", shopTag);
                 shopLayers[shopTag] = L.layerGroup().addTo(map);
             } else {
-                shopLayers[shopTag].addLayer(marker); // Add marker to the corresponding layer group
+                shopLayers[shopTag].addLayer(marker);
             }
         });
     }
 }
 
-// Utility function to calculate the distance between two points
 function calculateDistance(latlng1, latlng2) {
-    return map.distance(latlng1, latlng2).toFixed(2); // Distance in meters, rounded to 2 decimals
+    return map.distance(latlng1, latlng2).toFixed(2);
 }
 
 function geocodeAddress(address, city) {
     let addressInput = document.getElementById('addressInput');
 
-    // Clear any previous shake and red-border classes
     addressInput.classList.remove('shake', 'red-border');
 
     let queryString = `https://nominatim.openstreetmap.org/search?format=json&q=${address}`;
 
-    // Append city to the query if it's selected
     if (city) {
         queryString += `, ${city}`;
     }
@@ -272,45 +243,31 @@ function geocodeAddress(address, city) {
         .then(response => response.json())
         .then(data => {
             if (data.length > 0) {
-                // Assuming the first result is the most relevant
                 const coordinates = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-
-                // Add a green square marker to the map at the geocoded location
                 addGreenSquareMarker(coordinates[0], coordinates[1]);
-
-                // Optionally, center the map on the new marker
                 map.setView(coordinates, 15);
-
-                // Clear previously visible shops
                 clearVisibleShops();
-
-                // Show shops within the radius
                 showShopsInRadius(coordinates, searchRadius);
             } else {
                 console.error('No results found for this address.');
-                // Apply the shake and red-border classes to the address input
                 addressInput.classList.add('shake', 'red-border');
 
-                // Optionally, remove the shake and red-border classes after some time
                 setTimeout(function() {
                     addressInput.classList.remove('shake', 'red-border');
-                }, 500); // Duration of shaking animation
+                }, 500);
             }
         })
         .catch(error => {
             console.error('Error during geocoding:', error);
-            // Apply the shake and red-border classes to the address input in case of an error
             addressInput.classList.add('shake', 'red-border');
 
-            // Optionally, remove the shake and red-border classes after some time
             setTimeout(function() {
                 addressInput.classList.remove('shake', 'red-border');
-            }, 500); // Duration of shaking animation
+            }, 500);
         });
 }
 
 function clearVisibleShops() {
-    // Remove each marker from the map and clear the array
     visibleShopMarkers.forEach(marker => {
         map.removeLayer(marker);
     });
@@ -318,11 +275,9 @@ function clearVisibleShops() {
 }
 
 function showShopsInRadius(centerCoords, radius) {
-    // Clear the global visible shops list at the beginning of each call
     clearVisibleShops();
 
     Object.keys(shopLayers).forEach(shopTag => {
-        // Check if the shop layer is visible based on the toggle state
         var checkbox = document.querySelector(`.shopToggle[value="${shopTag}"]`);
         if (shopLayers[shopTag] && checkbox && checkbox.checked) {
             shopLayers[shopTag].eachLayer(function(layer) {
@@ -330,14 +285,12 @@ function showShopsInRadius(centerCoords, radius) {
                 var distance = map.distance(centerCoords, shopCoords);
 
                 if (distance <= radius) {
-                    // Check if the shop is already in the visibleShopsGlobal array to avoid duplicates
                     const isShopAlreadyVisible = visibleShopMarkers.some(marker => marker.getLatLng().equals(shopCoords));
 
                     if (!isShopAlreadyVisible) {
                         layer.addTo(map);
                         shopLayers[shopTag].addLayer(layer);
 
-                        // Add the marker to the visibleShopMarkers list
                         visibleShopMarkers.push(layer);
                     }
                 }
@@ -347,7 +300,6 @@ function showShopsInRadius(centerCoords, radius) {
 }
 
 function addGreenSquareMarker(lat, lng) {
-    // Remove the previous marker if it exists
     if (currentGreenSquareMarker) {
         map.removeLayer(currentGreenSquareMarker);
     }
@@ -374,7 +326,6 @@ function toggleDarkMode() {
     }
 }
 
-// Define light and dark tile layers for dark mode toggle
 var lightTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 });
@@ -384,46 +335,45 @@ var darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/
 });
 
 function loadPolandBorders() {
-    fetch('Map/Poland.geojson') // Adjust the path to your GeoJSON file
+    fetch('Map/Poland.geojson')
         .then(response => response.json())
         .then(data => {
             if (geojsonLayer) {
-                geojsonLayer.remove();  // Remove previous layer if it exists
+                geojsonLayer.remove();
             }
             geojsonLayer = L.geoJSON(data, {
                 style: function (feature) {
                     return {
-                        color: "#ff7800", // border color
+                        color: "#ff7800",
                         weight: 5,
-                        fillColor: "#ff7800", // light color for Poland
+                        fillColor: "#ff7800",
                         fillOpacity: 0.2
                     };
                 }
             }).addTo(map);
-            geojsonLayer.bringToFront(); // Make sure the border is always on top
+            geojsonLayer.bringToFront();
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
 
 function EU() {
-    fetch('Map/EU.json') // Adjust the path to your GeoJSON file for EU
+    fetch('Map/EU.json')
         .then(response => response.json())
         .then(data => {
             L.geoJSON(data, {
                 style: function (feature) {
-                    // Check if the country is Poland, then style differently
                     if (feature.properties.name === "Poland") {
                         return {
-                            fillColor: "#ffffff", // White color for Poland
-                            fillOpacity: 1, // Slightly transparent
-                            color: "#ffffff", // Black border color
+                            fillColor: "#ffffff",
+                            fillOpacity: 1,
+                            color: "#ffffff",
                             weight: 1
                         };
                     } else {
                         return {
-                            fillColor: "#444444", // Black color for other countries
-                            fillOpacity: 0.9, // Slightly transparent
-                            color: "#000000", // Black border color
+                            fillColor: "#444444",
+                            fillOpacity: 0.9,
+                            color: "#000000",
                             weight: 1
                         };
                     }
@@ -437,7 +387,6 @@ function toggleDropdown() {
     document.getElementById("shopToggleContainer").classList.toggle("show");
 }
 
-// Close the dropdown menu if the user clicks outside of it
 window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {
         var dropdowns = document.getElementsByClassName("dropdown-content");

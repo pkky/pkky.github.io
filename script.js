@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
             currentSectionIndex = index;
             isScrolling = true;
-            setTimeout(() => { isScrolling = false; }, 500); // Adjust delay as needed
+            setTimeout(() => { isScrolling = false; }, 500);
         }
     }
 

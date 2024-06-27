@@ -1,10 +1,10 @@
 :root {
-    --primary-color: #B18FCF; /* Digital Lavender */
-    --secondary-color: #FF6F61; /* Vibrant Orange */
-    --accent-color: #A3D9B1; /* Mint Green */
-    --text-color: #2C3E50; /* Deep Blue */
-    --background-color: #E8F1F5; /* Soft Blue for body */
-    --header-background-color: #D9E4E9; /* Lightened version for header */
+    --primary-color: #B18FCF;
+    --secondary-color: #FF6F61;
+    --accent-color: #A3D9B1;
+    --text-color: #2C3E50;
+    --background-color: #E8F1F5;
+    --header-background-color: #D9E4E9;
 }
 
 body {
@@ -87,7 +87,6 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Dropdown Button */
 .dropbtn {
     background-color: #4CAF50;
     color: white;
@@ -97,14 +96,12 @@ html {
     cursor: pointer;
 }
 
-/* The container <div> - needed to position the dropdown content */
 .dropdown {
     position: relative;
     display: inline-block;
     z-index: 1000;
 }
 
-/* Dropdown Content (Hidden by Default) */
 .dropdown-content {
     display: none;
     position: absolute;
@@ -114,7 +111,6 @@ html {
     z-index: 1000;
 }
 
-/* Links inside the dropdown */
 .dropdown-content label {
     color: black;
     padding: 12px 16px;
@@ -122,27 +118,22 @@ html {
     display: block;
 }
 
-/* Change color of dropdown links on hover */
 .dropdown-content label:hover {
     background-color: #f1f1f1;
 }
 
-/* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
-/* Change the background color of the dropdown button when the dropdown content is shown */
 .dropdown:hover .dropbtn {
     background-color: #3e8e41;
 }
 
-/* Show the dropdown menu on button click */
 .show {
     display: block;
 }
 
-/* Ensure the map container has a lower z-index */
 #mapContainer {
     height: 640px;
     border: 2px solid #444;
@@ -197,7 +188,6 @@ html {
     margin-left: 10px;
 }
 
-/* Project section styling */
 #projects {
     width: 100%;
     margin-left: auto;
@@ -222,11 +212,11 @@ html {
     cursor: pointer;
     display: flex;
     align-items: center;
-    text-decoration: none; /* Remove underline */
+    text-decoration: none;
 }
 
 .project-link i {
-    margin-left: 5px; /* Adjust this value to reduce/increase spacing between text and icon */
+    margin-left: 5px;
     flex-shrink: 0;
 }
 
@@ -302,4 +292,15 @@ html {
         margin-left: 0;
         margin-top: 10px;
     }
+}
+
+footer {
+    background-color: var(--header-background-color);
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    border-top: 2px solid gray;
+    color: var(--text-color);
 }
