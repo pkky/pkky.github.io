@@ -7,14 +7,13 @@ document.addEventListener('DOMContentLoaded', function () {
     function scrollToSection(index) {
         if (index >= 0 && index < sections.length) {
             const headerHeight = document.querySelector('header').offsetHeight;
-            const additionalOffset = -100;
-            const sectionTop = sections[index].offsetTop - headerHeight - additionalOffset;
-    
+            const sectionTop = sections[index].offsetTop - headerHeight;
+
             window.scrollTo({
                 top: sectionTop,
                 behavior: 'smooth'
             });
-    
+
             currentSectionIndex = index;
             isScrolling = true;
             setTimeout(() => { isScrolling = false; }, 500);
@@ -31,8 +30,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function highlightActiveSection() {
         let scrollPosition = document.documentElement.scrollTop || document.body.scrollTop;
+        const headerHeight = document.querySelector('header').offsetHeight;
         sections.forEach((section, index) => {
-            if (section.offsetTop <= scrollPosition && (section.offsetTop + section.offsetHeight) > scrollPosition) {
+            if (section.offsetTop <= scrollPosition + headerHeight && (section.offsetTop + section.offsetHeight) > scrollPosition + headerHeight) {
                 currentSectionIndex = index;
                 navLinks.forEach(link => {
                     link.classList.remove('active');
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const projectLinks = document.querySelectorAll('.project-link');
-    
+
     projectLinks.forEach(link => {
         link.addEventListener('click', function (e) {
             e.preventDefault();
@@ -105,5 +105,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 content.previousElementSibling.querySelector('i').classList.add('rotate-down');
             });
         }
+    });
+
+    document.querySelectorAll('.copy-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const code = this.nextElementSibling.textContent;
+            navigator.clipboard.writeText(code)
+                .then(() => {
+                    alert("Kod skopiowany!");
+                })
+                .catch(err => {
+                    console.error("Error: ", err);
+                });
+        });
     });
 });

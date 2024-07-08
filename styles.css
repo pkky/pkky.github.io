@@ -5,6 +5,7 @@
     --text-color: #2C3E50;
     --background-color: #E8F1F5;
     --header-background-color: #D9E4E9;
+    --max-width: 1200px;
 }
 
 body {
@@ -29,6 +30,9 @@ header {
     position: sticky;
     top: 0;
     z-index: 1000;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    width: 100%;
 }
 
 header h1 {
@@ -53,7 +57,8 @@ header nav ul li a {
     padding: 5px;
 }
 
-header nav ul li a:hover {
+header nav ul li a:hover,
+header nav ul li a.active {
     color: var(--secondary-color);
 }
 
@@ -62,8 +67,11 @@ section {
     margin: 20px 0;
     scroll-snap-align: start;
     min-height: 100vh;
-    padding-top: 100px;
-    margin-top: -100px;
+    margin-top: 0;
+    max-width: var(--max-width);
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
 }
 
 h1, h2, p, nav {
@@ -192,6 +200,7 @@ html {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
+    max-width: var(--max-width);
 }
 
 .project-content {
@@ -202,6 +211,7 @@ html {
     overflow-y: auto;
     margin-top: 10px;
     width: 75%;
+    position: relative;
 }
 
 .hidden {
@@ -238,7 +248,25 @@ html {
     transition: transform 0.3s;
 }
 
-/* Responsive design */
+.copy-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.copy-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.hidden .copy-btn {
+    display: none;
+}
+
 @media (max-width: 768px) {
     header nav ul {
         flex-direction: column;
@@ -298,9 +326,10 @@ footer {
     background-color: var(--header-background-color);
     text-align: center;
     padding: 10px;
-    position: fixed;
-    bottom: 0;
     width: 100%;
     border-top: 2px solid gray;
     color: var(--text-color);
+    max-width: var(--max-width);
+    margin: 0 auto;
 }
+
