@@ -12,6 +12,10 @@
 <body>
     <header>
         <h1>Paweł Kurantowicz</h1>
+        <label class="switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider round"></span>
+        </label>
         <nav>
             <ul>
                 <li><a href="#index">Home</a></li>
@@ -164,7 +168,6 @@
                 <option value="Szczecin">Szczecin</option>
             </select>
             <input type="text" id="addressInput" placeholder="Podaj adres" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
-            <span id="darkModeToggle">🌜</span>
             <div class="dropdown">
                 <button onclick="toggleDropdown()" class="dropbtn">Wybierz sklep</button>
                 <div id="shopToggleContainer" class="dropdown-content">
