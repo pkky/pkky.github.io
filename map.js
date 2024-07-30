@@ -9,6 +9,7 @@ var polandBounds = [
 ];
 let searchRadius = 1500;
 var visibleShopMarkers = [];
+var isZoomLevelOutOfRange = false;
 
 const cityCoordinates = {
     "Warsaw": [52.229676, 21.012229],
@@ -61,6 +62,16 @@ function initializeMap() {
         if (map.getZoom() === 6) {
             resetMapView();
         }
+        if (map.getZoom() <= 12 || map.getZoom() >= 20) {
+            isZoomLevelOutOfRange = true;
+            clearVisibleShops();
+        } else {
+            isZoomLevelOutOfRange = false;
+            if (currentGreenSquareMarker) {
+                const coords = currentGreenSquareMarker.getLatLng();
+                showShopsInRadius([coords.lat, coords.lng], searchRadius);
+            }
+        }
     });
 
     EU();
@@ -70,7 +81,7 @@ function updateSearchRadius(value) {
     searchRadius = parseInt(value, 10);
     document.getElementById('radiusValue').innerText = searchRadius;
 
-    if (currentGreenSquareMarker) {
+    if (currentGreenSquareMarker && !isZoomLevelOutOfRange) {
         const coords = currentGreenSquareMarker.getLatLng();
         clearVisibleShops();
         showShopsInRadius([coords.lat, coords.lng], searchRadius);
@@ -122,7 +133,7 @@ function attachEventListeners() {
     });
     document.querySelectorAll('.shopToggle').forEach(toggle => {
         toggle.addEventListener('change', function() {
-            if (currentGreenSquareMarker) {
+            if (currentGreenSquareMarker && !isZoomLevelOutOfRange) {
                 const coords = currentGreenSquareMarker.getLatLng();
                 clearVisibleShops();
                 showShopsInRadius([coords.lat, coords.lng], searchRadius);
@@ -277,6 +288,10 @@ function clearVisibleShops() {
 function showShopsInRadius(centerCoords, radius) {
     clearVisibleShops();
 
+    if (isZoomLevelOutOfRange) {
+        return;
+    }
+
     Object.keys(shopLayers).forEach(shopTag => {
         var checkbox = document.querySelector(`.shopToggle[value="${shopTag}"]`);
         if (shopLayers[shopTag] && checkbox && checkbox.checked) {
@@ -396,5 +411,16 @@ window.onclick = function(event) {
                 openDropdown.classList.remove('show');
             }
         }
+    }
+}
+
+function updateShopMarkersVisibility() {
+    if (!isZoomLevelOutOfRange) {
+        if (currentGreenSquareMarker) {
+            const coords = currentGreenSquareMarker.getLatLng();
+            showShopsInRadius([coords.lat, coords.lng], searchRadius);
+        }
+    } else {
+        clearVisibleShops();
     }
 }
