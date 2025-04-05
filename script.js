@@ -1,10 +1,7 @@
-// --- Dark Mode Logic (Add to script.js) ---
-
 const darkModeToggle = document.getElementById('darkModeToggle');
 const userPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 const currentTheme = localStorage.getItem('theme');
 
-// Function to apply the theme (dark or light)
 function applyTheme(isDark) {
     if (isDark) {
         document.body.classList.add('dark-mode');
@@ -13,21 +10,17 @@ function applyTheme(isDark) {
         document.body.classList.remove('dark-mode');
         if (darkModeToggle) darkModeToggle.checked = false;
     }
-    // --- Call map-specific theme update IF it exists ---
     if (typeof updateMapTheme === 'function') {
         updateMapTheme(isDark);
     }
-    // --- End map-specific call ---
 }
 
-// Function to handle the toggle click/change
 function handleThemeToggle() {
     const isDark = darkModeToggle.checked;
     applyTheme(isDark);
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
 
-// Initialize theme on page load
 function initializeDarkMode() {
     let useDark = false;
     if (currentTheme === 'dark') {
@@ -35,26 +28,21 @@ function initializeDarkMode() {
     } else if (currentTheme === 'light') {
         useDark = false;
     } else {
-        // No preference saved, use system preference
         useDark = userPrefersDark;
     }
     applyTheme(useDark);
 
-    // Add listener to the toggle
     if (darkModeToggle) {
         darkModeToggle.addEventListener('change', handleThemeToggle);
     }
 
-    // Optional: Listen for system changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        // Only apply system change if no explicit preference is saved
         if (!localStorage.getItem('theme')) {
             applyTheme(e.matches);
         }
     });
 }
 
-// Call initialization when DOM is ready
 document.addEventListener('DOMContentLoaded', initializeDarkMode);
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -80,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     navLinks.forEach((link, index) => {
-        // Only intercept links that start with '#' for in-page scrolling.
         if (link.getAttribute('href').startsWith('#')) {
           link.addEventListener('click', function (e) {
             e.preventDefault();
@@ -128,30 +115,55 @@ document.addEventListener('DOMContentLoaded', function () {
     projectLinks.forEach(link => {
         link.addEventListener('click', function (e) {
             e.preventDefault();
+
             const projectContent = this.nextElementSibling;
-            const projectCode = projectContent.querySelector('.project-code');
+            const projectCode = projectContent?.querySelector('.project-code');
             const file = this.getAttribute('data-file');
             const icon = this.querySelector('i');
 
+            if (!projectContent || !projectCode || !file || !icon) {
+                console.error("Error: Could not find required elements for project link:", this);
+                return;
+            }
+
             document.querySelectorAll('.project-content').forEach(content => {
-                if (content !== projectContent) {
+                if (content !== projectContent && !content.classList.contains('hidden')) {
+                    console.log("Closing other project:", content.previousElementSibling?.getAttribute('data-file'));
                     content.classList.add('hidden');
-                    content.previousElementSibling.querySelector('i').classList.remove('rotate-up');
-                    content.previousElementSibling.querySelector('i').classList.add('rotate-down');
+                    const otherIcon = content.previousElementSibling?.querySelector('i');
+                    if (otherIcon) {
+                        otherIcon.classList.remove('rotate-up');
+                        otherIcon.classList.add('rotate-down');
+                    }
                 }
             });
-
             if (projectContent.classList.contains('hidden')) {
+
                 fetch(file)
-                    .then(response => response.text())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status} (${response.statusText})`);
+                        }
+                        return response.text();
+                    })
                     .then(text => {
                         projectCode.textContent = text;
                         projectContent.classList.remove('hidden');
-                        projectContent.scrollTop = 0; // Reset scroll position to top
+                        projectContent.scrollTop = 0;
                         icon.classList.remove('rotate-down');
                         icon.classList.add('rotate-up');
+                        console.log(`Displayed content for ${file}`);
+                    })
+                    .catch(error => {
+                        projectCode.textContent = `Error loading file: ${file}\n${error.message}\n\nPlease check the file path exists relative to index.html and that the server allows access.`;
+                        projectContent.classList.remove('hidden');
+                        projectContent.scrollTop = 0;
+                        icon.classList.remove('rotate-up');
+                        icon.classList.add('rotate-down');
                     });
+
             } else {
+                console.log(`Hiding content for ${file}`);
                 projectContent.classList.add('hidden');
                 icon.classList.remove('rotate-up');
                 icon.classList.add('rotate-down');
@@ -162,26 +174,37 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('click', function (e) {
         if (!e.target.closest('.project-link') && !e.target.closest('.project-content')) {
             document.querySelectorAll('.project-content').forEach(content => {
-                content.classList.add('hidden');
-                const icon = content.previousElementSibling.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('rotate-up');
-                    icon.classList.add('rotate-down');
+                if (!content.classList.contains('hidden')) {
+                    content.classList.add('hidden');
+                    const icon = content.previousElementSibling?.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('rotate-up');
+                        icon.classList.add('rotate-down');
+                    }
                 }
             });
         }
-    });    
+    });
 
     document.querySelectorAll('.copy-btn').forEach(button => {
         button.addEventListener('click', function () {
-            const code = this.nextElementSibling.textContent;
-            navigator.clipboard.writeText(code)
-                .then(() => {
-                    alert("Kod skopiowany!");
-                })
-                .catch(err => {
-                    console.error("Error: ", err);
-                });
+            const codeElement = this.nextElementSibling;
+            const code = codeElement?.textContent;
+            if (code) {
+                navigator.clipboard.writeText(code)
+                    .then(() => {
+                        button.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                             button.innerHTML = '<i class="far fa-copy"></i>';
+                        }, 1500);
+                    })
+                    .catch(err => {
+                        console.error("Clipboard copy error: ", err);
+                        alert("Failed to copy code.");
+                    });
+            } else {
+                console.error("Could not find code element to copy from:", this);
+            }
         });
     });
 });
