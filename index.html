@@ -1,198 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paweł Kurantowicz Portfolio</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-</head>
-<body>
-    <header>
-        <h1>Paweł Kurantowicz</h1>
-        <label class="switch">
-            <input type="checkbox" id="darkModeToggle">
-            <span class="slider round"></span>
-        </label>
-        <nav>
-            <ul>
-                <li><a href="#index">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a href="#map">Map</a></li>
-            </ul>
-        </nav>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paweł Kurantowicz</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="custom.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    </head>
+    <body class="font-sans leading-relaxed m-0 p-0 overflow-y-scroll"> 
 
-    <section id="index">
-        <h2>Welcome</h2>
-        <p>Welcome to my portfolio website! Navigate through the menu to learn more about me and my work.</p>
-    </section>
+      <header class="sticky top-0 z-50 w-full inset-x-0">
+        <div class="max-w-screen-xl mx-auto p-2 md:p-4 flex flex-wrap justify-between items-center">
+          <div class="flex items-center space-x-4">
+            <h1 class="text-xl font-semibold m-0">Paweł Kurantowicz</h1>
+            <label for="darkModeToggle" class="relative inline-block w-12 h-6 cursor-pointer">
+              <input type="checkbox" id="darkModeToggle" class="opacity-0 w-0 h-0" />
+              <span class="slider dark-mode-slider"></span>
+            </label>
+          </div>
+          <div class="flex items-center space-x-4">
+            <nav>
+              <ul class="list-none p-0 m-0 flex flex-wrap space-x-4">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="index.html#about" class="nav-link">About</a></li>
+                <li><a href="index.html#projects" class="nav-link">Projects</a></li>
+                <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+                <li><a href="map.html" class="nav-link">Map</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </header>
+      
 
-    <section id="about">
-        <h2>About Me</h2>
-        <p>As a highly skilled IT Specialist with a solid background in Level 1 and Level 2 support, I possess extensive experience in troubleshooting, software installation, hardware maintenance, user account management, and network support. My proficiency spans multiple operating systems, including Windows, Linux, and Mac, and I have a strong command of various scripting languages and tools, such as PowerShell, Bash, Git, and SQL. With a degree in Data Engineering and a passion for Python development, I am adept at database management, data analysis, and automation. My ability to manage and optimize IT systems while providing exceptional user support has consistently contributed to operational efficiency and enhanced user satisfaction.</p>
-    </section>
+    <main class="max-w-screen-xl mx-auto w-full">
+      <section id="index" class="section-padding text-center md:text-left">
+         <h2 class="section-heading mb-4">Welcome</h2>
+         <p class="section-paragraph max-w-3xl mx-auto md:mx-0">
+           Welcome to my portfolio!
+         </p>
+      </section>
 
-    <section id="projects">
-        <h2>My Projects</h2>
-        <p>Python:</p>
-        <ul id="project-list">
-            <li>
-                <a href="#" class="project-link" data-file="python/TicTacToe.txt">
-                    Tic Tac Toe <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-            <li>
-                <a href="#" class="project-link" data-file="python/TicTacToeWithComputer.txt">
-                    Tic Tac Toe With Computer <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-            <li>
-                <a href="#" class="project-link" data-file="python/Calculator.txt">
-                    Calculator <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-            <li>
-                <a href="#" class="project-link" data-file="python/ModelsofEpidemiology.txt">
-                    Models of Epidemiology <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-            <li>
-                <a href="#" class="project-link" data-file="python/MonsterHunterNowBestArmorAndWeapon.txt">
-                    Monster Hunter Now Best Armor And Weapon <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-            <li>
-                <a href="#" class="project-link" data-file="python/SimpleCurrencyConverter.txt">
-                    Simple Currency Converter <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-            <li>
-                <a href="#" class="project-link" data-file="python/WoodGathering.txt">
-                    Wood Gathering <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-            <li>
-                <a href="#" class="project-link" data-file="python/SnakeGameWithDatabase.txt">
-                    Snake Game With Database <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-            <li>
-                <a href="#" class="project-link" data-file="python/SnakeGameWithHeuristic.txt">
-                    Snake Game With Heuristic <i class="fas fa-chevron-down"></i>
-                </a>
-                <div class="project-content hidden">
-                    <button class="copy-btn">Copy</button>
-                    <pre class="project-code"></pre>
-                </div>
-            </li>
-        </ul>
-    </section>    
-
-    <section id="contact">
-        <h2>Contact Me</h2>
-        <p>
-            <a href="mailto:pawkurantowicz@gmail.com">
-                <i class="fas fa-envelope"></i> pawkurantowicz@gmail.com
-            </a>
+      <section id="about" class="section-padding">
+        <h2 class="section-heading mb-4">About Me</h2>
+        <p class="section-paragraph max-w-3xl">
+          I am a highly skilled IT Specialist with extensive experience in troubleshooting, system maintenance, and software development. My background includes working with multiple operating systems and scripting languages, enabling me to deliver efficient solutions and maintain robust IT infrastructures. I am passionate about innovation and dedicated to continuous learning in the ever-evolving field of technology.
         </p>
-        <p>
-            <a href="tel:+48604168735">
-                <i class="fas fa-phone"></i> +48604168735
-            </a>
-        </p>
-        <p>
-            <a href="https://www.linkedin.com/in/pkky/" target="_blank">
-                <i class="fab fa-linkedin"></i> LinkedIn Profile
-            </a>
-        </p>
-    </section>   
+      </section>
 
-    <section id="map">
-        <div id="map-controls">
-            <select class="form-control" id="citySelector" onchange="showCity()">
-                <option value="" selected>Wybierz miasto</option>
-                <option value="Warsaw">Warszawa</option>
-                <option value="Lodz">Łódź</option>
-                <option value="Krakow">Kraków</option>
-                <option value="Wroclaw">Wrocław</option>
-                <option value="Bydgoszcz">Bydgoszcz</option>
-                <option value="Torun">Toruń</option>
-                <option value="Lublin">Lublin</option>
-                <option value="Gorzow_Wielkopolski">Gorzów Wielkopolski</option>
-                <option value="Zielona_Gora">Zielona Góra</option>
-                <option value="Opole">Opole</option>
-                <option value="Rzeszow">Rzeszów</option>
-                <option value="Bialystok">Białystok</option>
-                <option value="Gdansk">Gdansk</option>
-                <option value="Katowice">Katowice</option>
-                <option value="Kielce">Kielce</option>
-                <option value="Olsztyn">Olsztyn</option>
-                <option value="Poznan">Poznań</option>
-                <option value="Szczecin">Szczecin</option>
-            </select>
-            <input type="text" id="addressInput" placeholder="Podaj adres" onchange="geocodeAddress(this.value, document.getElementById('citySelector').value)">
-            <div class="dropdown">
-                <button onclick="toggleDropdown()" class="dropbtn">Wybierz sklep</button>
-                <div id="shopToggleContainer" class="dropdown-content">
-                    <label><input type="checkbox" class="shopToggle" value="biedronka" checked> Biedronka</label>
-                    <label><input type="checkbox" class="shopToggle" value="lidl" checked> Lidl</label>
-                    <label><input type="checkbox" class="shopToggle" value="carrefour" checked> Carrefour</label>
-                    <label><input type="checkbox" class="shopToggle" value="auchan" checked> Auchan</label>
-                    <label><input type="checkbox" class="shopToggle" value="rossmann" checked> Rossmann</label>
-                    <label><input type="checkbox" class="shopToggle" value="kaufland" checked> Kaufland</label>
-                    <label><input type="checkbox" class="shopToggle" value="dealz" checked> Dealz</label>
-                </div>
+      <section id="projects" class="section-padding">
+        <h2 class="section-heading mb-4">My Projects</h2>
+        <p class="mb-6 section-paragraph">Python:</p>
+        <ul id="project-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <li class="project-card">
+            <a href="#" class="project-link" data-file="python/TicTacToe.txt">
+              <span>Tic Tac Toe</span>
+              <i class="fas fa-chevron-down project-chevron"></i>
+            </a>
+            <div class="project-content hidden">
+              <button class="copy-btn" aria-label="Copy Code"><i class="far fa-copy"></i></button>
+              <pre class="project-code"><code># Code will be loaded here...</code></pre>
             </div>
-        </div>
-        <div id="radiusSliderContainer">
-            <label for="radiusSlider">Promień Wyszukiwania: <span id="radiusValue">1500</span> metrów</label>
-            <input type="range" id="radiusSlider" min="100" max="15000" step="100" value="1500" oninput="updateSearchRadius(this.value)">
-        </div>
-        <div id="mapContainer"></div>
-    </section>
+          </li>                   
+          <li class="project-card">
+             <a href="#" class="project-link">
+               <span>Tic Tac Toe With Computer</span>
+               <i class="fas fa-chevron-down project-chevron"></i>
+             </a>
+             <div class="project-content">
+               <button class="copy-btn" aria-label="Copy Code"><i class="far fa-copy"></i></button>
+               <pre class="project-code"><code># Code will be loaded here...</code></pre>
+             </div>
+           </li>
+           <li class="project-card">
+             <a href="#" class="project-link">
+               <span>Calculator</span>
+               <i class="fas fa-chevron-down project-chevron"></i>
+             </a>
+             <div class="project-content">
+               <button class="copy-btn" aria-label="Copy Code"><i class="far fa-copy"></i></button>
+               <pre class="project-code"><code># Code will be loaded here...</code></pre>
+             </div>
+           </li>
+          </ul>
+      </section>
 
-    <footer>
-        <p>&copy; 2024 Paweł Kurantowicz. All rights reserved.</p>
+      <section id="contact" class="section-padding">
+        <h2 class="section-heading mb-6">Contact Me</h2>
+        <div class="space-y-4">
+          <a href="mailto:pawkurantowicz@gmail.com" class="contact-link">
+             <i class="fas fa-envelope fa-fw w-6"></i>
+             <span>pawkurantowicz@gmail.com</span>
+           </a>
+           <a href="tel:+48604168735" class="contact-link">
+             <i class="fas fa-phone fa-fw w-6"></i>
+             <span>+48 604 168 735</span> </a>
+           <a href="https://linkedin.com/in/pkky" target="_blank" rel="noopener noreferrer" class="contact-link">
+             <i class="fab fa-linkedin fa-fw w-6"></i>
+             <span>LinkedIn Profile</span> </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="text-center mt-16 max-w-screen-xl mx-auto w-full">
+      <p>&copy; 2025 Paweł Kurantowicz. All rights reserved.</p>
     </footer>
 
-    <script src="map.js"></script>
     <script src="script.js"></script>
-</body>
+    </body>
 </html>

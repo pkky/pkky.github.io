@@ -1,3 +1,62 @@
+// --- Dark Mode Logic (Add to script.js) ---
+
+const darkModeToggle = document.getElementById('darkModeToggle');
+const userPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+const currentTheme = localStorage.getItem('theme');
+
+// Function to apply the theme (dark or light)
+function applyTheme(isDark) {
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        if (darkModeToggle) darkModeToggle.checked = true;
+    } else {
+        document.body.classList.remove('dark-mode');
+        if (darkModeToggle) darkModeToggle.checked = false;
+    }
+    // --- Call map-specific theme update IF it exists ---
+    if (typeof updateMapTheme === 'function') {
+        updateMapTheme(isDark);
+    }
+    // --- End map-specific call ---
+}
+
+// Function to handle the toggle click/change
+function handleThemeToggle() {
+    const isDark = darkModeToggle.checked;
+    applyTheme(isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+// Initialize theme on page load
+function initializeDarkMode() {
+    let useDark = false;
+    if (currentTheme === 'dark') {
+        useDark = true;
+    } else if (currentTheme === 'light') {
+        useDark = false;
+    } else {
+        // No preference saved, use system preference
+        useDark = userPrefersDark;
+    }
+    applyTheme(useDark);
+
+    // Add listener to the toggle
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', handleThemeToggle);
+    }
+
+    // Optional: Listen for system changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        // Only apply system change if no explicit preference is saved
+        if (!localStorage.getItem('theme')) {
+            applyTheme(e.matches);
+        }
+    });
+}
+
+// Call initialization when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeDarkMode);
+
 document.addEventListener('DOMContentLoaded', function () {
     const sections = Array.from(document.querySelectorAll('section'));
     const navLinks = document.querySelectorAll('nav ul li a');
@@ -21,12 +80,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     navLinks.forEach((link, index) => {
-        link.addEventListener('click', function (e) {
+        // Only intercept links that start with '#' for in-page scrolling.
+        if (link.getAttribute('href').startsWith('#')) {
+          link.addEventListener('click', function (e) {
             e.preventDefault();
             scrollToSection(index);
             highlightActiveSection();
-        });
-    });
+          });
+        }
+      });      
 
     function highlightActiveSection() {
         let scrollPosition = document.documentElement.scrollTop || document.body.scrollTop;
@@ -98,14 +160,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.addEventListener('click', function (e) {
-        if (!e.target.classList.contains('project-link') && !e.target.closest('.project-content')) {
+        if (!e.target.closest('.project-link') && !e.target.closest('.project-content')) {
             document.querySelectorAll('.project-content').forEach(content => {
                 content.classList.add('hidden');
-                content.previousElementSibling.querySelector('i').classList.remove('rotate-up');
-                content.previousElementSibling.querySelector('i').classList.add('rotate-down');
+                const icon = content.previousElementSibling.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('rotate-up');
+                    icon.classList.add('rotate-down');
+                }
             });
         }
-    });
+    });    
 
     document.querySelectorAll('.copy-btn').forEach(button => {
         button.addEventListener('click', function () {

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map - Paweł Kurantowicz</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="custom.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  </head>
+  <body class="font-sans leading-relaxed m-0 p-0 overflow-y-scroll"> 
+
+    <header class="sticky top-0 z-50 w-full inset-x-0">
+        <div class="max-w-screen-xl mx-auto p-2 md:p-4 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-4">
+            <h1 class="text-xl font-semibold m-0">Paweł Kurantowicz</h1>
+            <label for="darkModeToggle" class="relative inline-block w-12 h-6 cursor-pointer">
+                <input type="checkbox" id="darkModeToggle" class="opacity-0 w-0 h-0" />
+                <span class="slider dark-mode-slider"></span>
+            </label>
+            </div>
+            <div class="flex items-center space-x-4">
+            <nav>
+                <ul class="list-none p-0 m-0 flex flex-wrap space-x-4">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="map.html" class="nav-link active">Map</a></li>
+                </ul>
+            </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-screen-xl mx-auto w-full">
+        <section id="map-section" class="section-padding"> <h2 class="section-heading mb-6">Interactive Map</h2> <div class="map-controls-container mb-6 space-y-4">
+            <div class="flex flex-wrap items-center gap-4">
+            <select id="citySelector" class="map-control map-select">
+              <option value="" selected>Wybierz miasto</option>
+              <option value="Warsaw">Warszawa</option>
+              <option value="Lodz">Łódź</option>
+              <option value="Krakow">Kraków</option>
+              <option value="Wroclaw">Wrocław</option>
+              <option value="Bydgoszcz">Bydgoszcz</option>
+              <option value="Torun">Toruń</option>
+              <option value="Lublin">Lublin</option>
+              <option value="Gorzow_Wielkopolski">Gorzów Wielkopolski</option>
+              <option value="Zielona_Gora">Zielona Góra</option>
+              <option value="Opole">Opole</option>
+              <option value="Rzeszow">Rzeszów</option>
+              <option value="Bialystok">Białystok</option>
+              <option value="Gdansk">Gdansk</option>
+              <option value="Katowice">Katowice</option>
+              <option value="Kielce">Kielce</option>
+              <option value="Olsztyn">Olsztyn</option>
+              <option value="Poznan">Poznań</option>
+              <option value="Szczecin">Szczecin</option>
+            </select>
+
+            <input type="text" id="addressInput" placeholder="Podaj adres" class="map-control map-input flex-grow">
+
+            <div class="dropdown relative inline-block">
+                <button class="map-button dropbtn">
+                    <span>Wybierz sklep</span> <i class="fas fa-chevron-down text-xs ml-1"></i>
+                </button>
+              <div id="shopToggleContainer" class="dropdown-content map-dropdown-content hidden">
+                <label><input type="checkbox" class="shopToggle" value="biedronka" checked> Biedronka</label>
+                <label><input type="checkbox" class="shopToggle" value="lidl" checked> Lidl</label>
+                <label><input type="checkbox" class="shopToggle" value="carrefour" checked> Carrefour</label>
+                <label><input type="checkbox" class="shopToggle" value="auchan" checked> Auchan</label>
+                <label><input type="checkbox" class="shopToggle" value="rossmann" checked> Rossmann</label>
+                <label><input type="checkbox" class="shopToggle" value="kaufland" checked> Kaufland</label>
+                <label><input type="checkbox" class="shopToggle" value="dealz" checked> Dealz</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="radiusSliderContainer" class="flex flex-wrap items-center gap-4">
+            <label for="radiusSlider" class="whitespace-nowrap font-medium">Promień (m):</label>
+            <input type="range" id="radiusSlider" min="100" max="15000" step="100" value="1500" class="map-slider flex-grow">
+            <span id="radiusValue" class="font-semibold w-16 text-right">1500</span>
+          </div>
+        </div>
+
+        <div id="mapContainer" class="map-container w-full relative z-10" style="height: 65vh;"></div>
+        </section>
+    </main>
+
+    <footer class="text-center mt-16 max-w-screen-xl mx-auto w-full">
+      <p>&copy; 2025 Paweł Kurantowicz. All rights reserved.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="script.js"></script> 
+    <script src="map.js"></script> 
+</body>
+</html>

@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations and styles that might be hard to implement with just Tailwind classes */
+@layer components {
+  .scroll-snap-y {
+    scroll-snap-type: y mandatory;
+  }
+  
+  .scroll-snap-start {
+    scroll-snap-align: start;
+  }
+  
+  .rotate-up {
+    transform: rotate(180deg);
+    transition: transform 0.3s;
+  }
+  
+  .rotate-down {
+    transform: rotate(0deg);
+    transition: transform 0.3s;
+  }
+  
+  .shake {
+    animation: shake 0.5s;
+  }
+  
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    50% { transform: translateX(10px); }
+    75% { transform: translateX(-10px); }
+    100% { transform: translateX(0); }
+  }
+  
+  .green-square-marker div {
+    background-color: green !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  .dark-mode {
+    --tw-text-opacity: 1;
+    color: rgb(232 241 245 / var(--tw-text-opacity));
+    --tw-bg-opacity: 1;
+    background-color: rgb(44 62 80 / var(--tw-bg-opacity));
+  }
+  
+  .dark-mode header {
+    --tw-bg-opacity: 1;
+    background-color: rgb(31 45 61 / var(--tw-bg-opacity));
+  }
+  
+  .dark-mode .project-content {
+    color: black;
+  }
+  
+  .red-border {
+    border: 2px solid red !important;
+  }
+}

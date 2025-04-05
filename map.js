@@ -49,14 +49,16 @@ function initializeMap() {
 
     loadPolandBorders();
 
+    if (document.body.classList.contains('dark-mode')) {
+        darkTileLayer.addTo(map);
+    } else {
+            lightTileLayer.addTo(map);
+    }
+
     var shopTypes = ["Biedronka", "Lidl", "Carrefour", "Auchan", "Rossmann", "Kaufland", "Dealz"];
     shopTypes.forEach(shopType => {
         shopLayers[shopType.toLowerCase()] = L.layerGroup().addTo(map);
     });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-    }).addTo(map);
 
     map.on('zoomend', function() {
         if (map.getZoom() === 6) {
@@ -86,6 +88,8 @@ function updateSearchRadius(value) {
         clearVisibleShops();
         showShopsInRadius([coords.lat, coords.lng], searchRadius);
     }
+
+    updateShopMarkersVisibility();
 }
 
 function resetMapView() {
@@ -125,7 +129,6 @@ function clearCityData() {
 
 function attachEventListeners() {
     document.getElementById('citySelector').addEventListener('change', showCity);
-    document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
     document.getElementById('addressInput').addEventListener('change', function(e) {
         var address = e.target.value;
         var city = document.getElementById('citySelector').value;
@@ -138,8 +141,25 @@ function attachEventListeners() {
                 clearVisibleShops();
                 showShopsInRadius([coords.lat, coords.lng], searchRadius);
             }
+            updateShopMarkersVisibility();
         });
     });
+
+    const radiusSlider = document.getElementById('radiusSlider');
+    if (radiusSlider) {
+        radiusSlider.addEventListener('input', function(e) {
+            updateSearchRadius(e.target.value);
+        });
+    }
+
+    const dropdownButton = document.querySelector('.dropbtn'); // Or use a specific ID if you have multiple buttons
+    if (dropdownButton) {
+        dropdownButton.addEventListener('click', function(event) {
+            // Stop this click event from bubbling up to the window listener
+            event.stopPropagation();
+            toggleDropdown(); // Call your existing toggle function
+        });
+    }
 }
 
 function showCity() {
@@ -328,16 +348,26 @@ function addGreenSquareMarker(lat, lng) {
     currentGreenSquareMarker = L.marker([lat, lng], { icon: greenIcon }).addTo(map);
 }
 
-function toggleDarkMode() {
-    var isDarkMode = document.body.classList.toggle('dark-mode');
-    this.textContent = isDarkMode ? '🌞' : '🌜';
-
-    if (isDarkMode) {
-        map.removeLayer(lightTileLayer);
-        darkTileLayer.addTo(map);
+function updateMapTheme(isDark) {
+    // Ensure map and layers are initialized before trying to remove/add
+    if (map && lightTileLayer && darkTileLayer) {
+        if (isDark) {
+            if (map.hasLayer(lightTileLayer)) {
+                map.removeLayer(lightTileLayer);
+            }
+            if (!map.hasLayer(darkTileLayer)) {
+                darkTileLayer.addTo(map);
+            }
+        } else {
+            if (map.hasLayer(darkTileLayer)) {
+                map.removeLayer(darkTileLayer);
+            }
+            if (!map.hasLayer(lightTileLayer)) {
+                lightTileLayer.addTo(map);
+            }
+        }
     } else {
-        map.removeLayer(darkTileLayer);
-        lightTileLayer.addTo(map);
+        console.log("Map or tile layers not ready for theme update yet.");
     }
 }
 
@@ -399,15 +429,18 @@ function EU() {
 }
 
 function toggleDropdown() {
+    // console.log("toggleDropdown called"); // Keep logs for debugging if needed
     document.getElementById("shopToggleContainer").classList.toggle("show");
 }
 
 window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
+    // Use closest to handle clicks inside the button too
+    if (!event.target.closest('.dropbtn')) {
         var dropdowns = document.getElementsByClassName("dropdown-content");
         for (var i = 0; i < dropdowns.length; i++) {
             var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
+            // Also check if the click is inside the open dropdown content
+            if (openDropdown.classList.contains('show') && !openDropdown.contains(event.target)) {
                 openDropdown.classList.remove('show');
             }
         }
@@ -415,12 +448,15 @@ window.onclick = function(event) {
 }
 
 function updateShopMarkersVisibility() {
-    if (!isZoomLevelOutOfRange) {
-        if (currentGreenSquareMarker) {
+    if (!isZoomLevelOutOfRange) { // Check zoom level
+        if (currentGreenSquareMarker) { // Check if a location marker exists
             const coords = currentGreenSquareMarker.getLatLng();
+            // No need to clear here, showShopsInRadius does it
             showShopsInRadius([coords.lat, coords.lng], searchRadius);
+        } else {
+            clearVisibleShops(); // Clear shops if no location marker
         }
     } else {
-        clearVisibleShops();
+        clearVisibleShops(); // Clear shops if zoom is out of range
     }
 }
