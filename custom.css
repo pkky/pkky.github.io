@@ -549,3 +549,33 @@ body {
   border: 1px solid rgba(0,0,0,0.5);
   border-radius: 2px;
 }
+
+.external-project-link {
+  /* Copied from .project-link for visual consistency */
+  display: flex;            /* Use flexbox for alignment (optional if no icon) */
+  justify-content: space-between; /* Adjust if no icon */
+  align-items: center;      /* Adjust if no icon */
+  padding: 1rem 1.25rem;  /* Match padding */
+  cursor: pointer;          /* Standard pointer for links */
+  text-decoration: none;  /* Remove underline */
+  color: var(--color-text); /* Match text color */
+  font-weight: 500;         /* Match font weight */
+  transition: background-color 0.3s ease; /* Smooth hover */
+  border-bottom: 1px solid var(--color-border); /* Optional: Match bottom border */
+  /* Note: No chevron icon styles needed here */
+}
+
+.external-project-link:hover {
+    /* Copied from .project-link:hover */
+    background-color: rgba(0,0,0,0.03);
+}
+
+.dark-mode .external-project-link {
+    /* Match dark mode text color */
+    color: var(--color-text-dark);
+}
+
+.dark-mode .external-project-link:hover {
+    /* Copied from .dark-mode .project-link:hover */
+    background-color: rgba(255,255,255,0.05);
+}

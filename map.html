@@ -86,7 +86,15 @@
     </main>
 
     <footer class="text-center mt-16 max-w-screen-xl mx-auto w-full">
-      <p>&copy; 2025 Paweł Kurantowicz. All rights reserved.</p>
+      <p>&copy; <span id="copyright-year"></span> Paweł Kurantowicz. All rights reserved.</p>
+      <script>
+        const currentYear = new Date().getFullYear();
+        const yearElement = document.getElementById('copyright-year');
+    
+        if (yearElement) {
+          yearElement.textContent = currentYear;
+        }
+      </script>
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
